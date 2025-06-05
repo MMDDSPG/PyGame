@@ -1,6 +1,6 @@
 # 导入 tcod 库，这是一个用于开发 Roguelike 游戏的 Python 库
 import tcod
-
+import color
 import copy
 
 # 导入动作类
@@ -15,7 +15,7 @@ def main():
     screen_height = 50
 
     map_width = 80
-    map_height = 45
+    map_height = 43
 
     room_max_size = 10
     room_min_size = 6
@@ -52,6 +52,8 @@ def main():
 
     engine.update_fov()
 
+    engine.message_log.add_message( "Hello and welcome, adventurer, to yet another dungeon!", color.welcome_text)
+
     # 创建游戏窗口
     # columns, rows: 窗口尺寸
     # tileset: 使用的字体图集
@@ -70,10 +72,12 @@ def main():
         
         # 游戏主循环
         while True:
-           
-            engine.render(console=root_console, context=context)
-
-            engine.event_handler.handle_events()
+            root_console.clear()
+            engine.event_handler.on_render(console=root_console)
+            context.present(root_console)
+            # engine.render(console=root_console, context=context)
+            engine.event_handler.handle_events(context)
+            # engine.event_handler.handle_events()
 
             root_console.clear()
 
