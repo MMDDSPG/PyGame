@@ -8,6 +8,8 @@ from input_handlers import MainGameEventHandler
 from render_functions import render_bar, render_names_at_mouse_location
 from message_log import MessageLog
 
+import exceptions
+
 
 if TYPE_CHECKING:
     from entity import Actor
@@ -28,7 +30,10 @@ class Engine:
         # 遍历地图中的所有实体，除了玩家
         for entity in set(self.game_map.actors) - {self.player}:
            if entity.ai:
-               entity.ai.perform()
+                try:
+                    entity.ai.perform()
+                except exceptions.Impossible:
+                    pass  # Ignore impossible action exceptions from AI.
 
     def update_fov(self) -> None:
         """重计算玩家视野范围内的可见区域。"""

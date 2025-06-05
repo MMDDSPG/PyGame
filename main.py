@@ -2,6 +2,7 @@
 import tcod
 import color
 import copy
+import traceback
 
 # 导入动作类
 from engine import Engine
@@ -75,10 +76,16 @@ def main():
             root_console.clear()
             engine.event_handler.on_render(console=root_console)
             context.present(root_console)
-            # engine.render(console=root_console, context=context)
-            engine.event_handler.handle_events(context)
-            # engine.event_handler.handle_events()
 
+            try:
+                for event in tcod.event.wait():
+                    context.convert_event(event)
+                    engine.event_handler.handle_events(event)
+            except Exception:
+                traceback.print_exc() # Print error to stderr.
+                # Then print the error to the message log.
+                engine.message_log.add_message(traceback.format_exc(), color.error)
+                
             root_console.clear()
 
 # Python 的标准入口点检查
