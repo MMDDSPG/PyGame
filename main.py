@@ -2,17 +2,22 @@
 import tcod
 
 # 导入动作类
-from actions import EscapeAction, MovementAction
+from engine import Engine
 from input_handlers import EventHandler
+from entity import Entity
+from procgen import generate_dungeon
 
 def main():
     # 设置游戏窗口的宽度和高度（以字符为单位）
     screen_width = 80
     screen_height = 50
 
-    # 玩家初始位置
-    player_x = int(screen_width / 2)
-    player_y = int(screen_height / 2)
+    map_width = 80
+    map_height = 45
+
+    room_max_size = 10
+    room_min_size = 6
+    max_rooms = 30
 
     # 加载游戏使用的字体图集
     # dejavu10x10_gs_tc.png: 字体文件
@@ -25,6 +30,24 @@ def main():
 
     # 创建事件处理器
     event_handler = EventHandler()
+
+    # 创建玩家和 NPC
+    player = Entity(int(screen_width / 2), int(screen_height / 2), "@", (255, 255, 255))
+    npc = Entity(int(screen_width / 2 - 5), int(screen_height / 2), "@", (255, 255, 0))
+    entities = {npc, player}
+
+    # 创建游戏地图
+    game_map = generate_dungeon(
+        max_rooms=max_rooms,
+        room_min_size=room_min_size,
+        room_max_size=room_max_size,
+        map_width=map_width,
+        map_height=map_height,
+        player=player
+    )
+
+    # 创建引擎
+    engine = Engine(entities=entities, event_handler=event_handler, game_map=game_map, player=player)
 
     # 创建游戏窗口
     # columns, rows: 窗口尺寸
@@ -47,28 +70,14 @@ def main():
         
         # 游戏主循环
         while True:
-            # 在控制台坐标 (1,1) 处打印 "@" 符号，这通常代表玩家角色
-            root_console.print(x=player_x, y=player_y, string="@")
+           
+            engine.render(console=root_console, context=context)
 
-            # 将控制台内容渲染到屏幕上
-            context.present(root_console)
+            events = tcod.event.wait()
+
+            engine.handle_events(events=events)
 
             root_console.clear()
-
-            # 事件处理循环
-            for event in tcod.event.wait():
-                # 如果检测到退出事件，则退出程序
-                action = event_handler.dispatch(event)
-
-                if action is None:
-                    continue
-
-                if isinstance(action, MovementAction):
-                    player_x += action.dx
-                    player_y += action.dy
-                
-                elif isinstance(action, EscapeAction):
-                    raise SystemExit()
 
 # Python 的标准入口点检查
 # 确保代码只在直接运行时执行，而不是在被导入时执行
