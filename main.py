@@ -23,6 +23,7 @@ def main():
     max_rooms = 30
 
     max_monsters_per_room = 2
+    max_items_per_room = 2
 
     # 加载游戏使用的字体图集
     # dejavu10x10_gs_tc.png: 字体文件
@@ -48,6 +49,7 @@ def main():
         map_width=map_width,
         map_height=map_height,
         max_monsters_per_room=max_monsters_per_room,
+        max_items_per_room=max_items_per_room,
         engine=engine
     )
 
@@ -85,7 +87,7 @@ def main():
                 traceback.print_exc() # Print error to stderr.
                 # Then print the error to the message log.
                 engine.message_log.add_message(traceback.format_exc(), color.error)
-                
+
             root_console.clear()
 
 # Python 的标准入口点检查
