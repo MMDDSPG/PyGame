@@ -2,7 +2,7 @@ from typing import Optional
 
 import tcod.event
 
-from actions import Action, EscapeAction, MovementAction
+from actions import Action, BumpAction, EscapeAction
 
 
 class EventHandler:
@@ -53,13 +53,13 @@ class EventHandler:
 
         # 根据不同的按键创建对应的移动动作
         if key == tcod.event.K_UP:  # 上方向键
-            action = MovementAction(dx=0, dy=-1)  # 向上移动
+            action = BumpAction(dx=0, dy=-1)  # 向上移动
         elif key == tcod.event.K_DOWN:  # 下方向键
-            action = MovementAction(dx=0, dy=1)   # 向下移动
+            action = BumpAction(dx=0, dy=1)   # 向下移动
         elif key == tcod.event.K_LEFT:  # 左方向键
-            action = MovementAction(dx=-1, dy=0)  # 向左移动
+            action = BumpAction(dx=-1, dy=0)  # 向左移动
         elif key == tcod.event.K_RIGHT:  # 右方向键
-            action = MovementAction(dx=1, dy=0)   # 向右移动
+            action = BumpAction(dx=1, dy=0)   # 向右移动
 
         # 处理 ESC 键，创建退出动作
         elif key == tcod.event.K_ESCAPE:

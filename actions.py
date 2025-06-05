@@ -25,12 +25,30 @@ class EscapeAction(Action):
         raise SystemExit()
 
 
-class MovementAction(Action):
+# 移动或攻击的基类
+class ActionWithDirection(Action):
     def __init__(self, dx: int, dy: int):
         super().__init__()
 
         self.dx = dx
         self.dy = dy
+
+    def perform(self, engine: Engine, entity: Entity) -> None:
+        raise NotImplementedError()
+
+# 攻击
+class MeleeAction(ActionWithDirection):
+    def perform(self, engine: Engine, entity: Entity) -> None:
+        dest_x = entity.x + self.dx
+        dest_y = entity.y + self.dy
+        target = engine.game_map.get_blocking_entity_at_location(dest_x, dest_y)
+        if not target:
+            return  # No entity to attack.
+
+        print(f"You kick the {target.name}, much to its annoyance!")
+
+# 移动
+class MovementAction(ActionWithDirection):
     def perform(self, engine: Engine, entity: Entity) -> None:
         dest_x = entity.x + self.dx
         dest_y = entity.y + self.dy
@@ -39,5 +57,21 @@ class MovementAction(Action):
             return  # Destination is out of bounds.
         if not engine.game_map.tiles["walkable"][dest_x, dest_y]:
             return  # Destination is blocked by a tile.
+        if engine.game_map.get_blocking_entity_at_location(dest_x, dest_y):
+            return  # Destination is blocked by an entity.
 
         entity.move(self.dx, self.dy)
+
+# 移动或攻击
+class BumpAction(ActionWithDirection):
+    def perform(self, engine: Engine, entity: Entity) -> None:
+        dest_x = entity.x + self.dx
+        dest_y = entity.y + self.dy
+
+        # 如果目的地被阻挡，则进行攻击  
+        if engine.game_map.get_blocking_entity_at_location(dest_x, dest_y):
+            return MeleeAction(self.dx, self.dy).perform(engine, entity)
+
+        # 否则，进行移动
+        else:
+            return MovementAction(self.dx, self.dy).perform(engine, entity)

@@ -1,10 +1,12 @@
 # 导入 tcod 库，这是一个用于开发 Roguelike 游戏的 Python 库
 import tcod
 
+import copy
+
 # 导入动作类
 from engine import Engine
 from input_handlers import EventHandler
-from entity import Entity
+import entity_factories
 from procgen import generate_dungeon
 
 def main():
@@ -19,6 +21,8 @@ def main():
     room_min_size = 6
     max_rooms = 30
 
+    max_monsters_per_room = 2
+
     # 加载游戏使用的字体图集
     # dejavu10x10_gs_tc.png: 字体文件
     # 32: 每行字符数
@@ -32,9 +36,7 @@ def main():
     event_handler = EventHandler()
 
     # 创建玩家和 NPC
-    player = Entity(int(screen_width / 2), int(screen_height / 2), "@", (255, 255, 255))
-    npc = Entity(int(screen_width / 2 - 5), int(screen_height / 2), "@", (255, 255, 0))
-    entities = {npc, player}
+    player = copy.deepcopy(entity_factories.player)
 
     # 创建游戏地图
     game_map = generate_dungeon(
@@ -43,11 +45,12 @@ def main():
         room_max_size=room_max_size,
         map_width=map_width,
         map_height=map_height,
+        max_monsters_per_room=max_monsters_per_room,
         player=player
     )
 
     # 创建引擎
-    engine = Engine(entities=entities, event_handler=event_handler, game_map=game_map, player=player)
+    engine = Engine(event_handler=event_handler, game_map=game_map, player=player)
 
     # 创建游戏窗口
     # columns, rows: 窗口尺寸
