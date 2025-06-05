@@ -1,9 +1,10 @@
 import numpy as np  # type: ignore
 from tcod.console import Console
 
+from entity import Actor
 import tile_types
 
-from typing import Iterable, Optional, TYPE_CHECKING
+from typing import Iterable, Iterator, Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
    from engine import Engine
@@ -25,7 +26,17 @@ class GameMap:
         self.explored = np.full(
             (width, height), fill_value=False, order="F"
         )  # 玩家之前探索过的地图格子
-        
+    
+    @property
+    def actors(self) -> Iterator[Actor]:
+        """Iterate over this maps living actors."""
+        yield from (
+            entity
+            for entity in self.entities
+            if isinstance(entity, Actor) and entity.is_alive
+        )
+
+
     def get_blocking_entity_at_location(
         self, location_x: int, location_y: int,
     ) -> Optional["Entity"]:
@@ -37,6 +48,12 @@ class GameMap:
             ):
                 return entity
 
+        return None
+    
+    def get_actor_at_location(self, x: int, y: int) -> Optional[Actor]:
+        for actor in self.actors:
+            if actor.x == x and actor.y == y:
+                return actor
         return None
 
     def in_bounds(self, x: int, y: int) -> bool:
@@ -56,7 +73,11 @@ class GameMap:
             default=tile_types.SHROUD,
         )
 
-        for entity in self.entities:
+        entities_sorted_for_rendering = sorted(
+            self.entities, key=lambda x: x.render_order.value       
+        )
+
+        for entity in entities_sorted_for_rendering:
             # 只打印在视野范围内的实体
             if self.visible[entity.x, entity.y]:
                 console.print(x=entity.x, y=entity.y, string=entity.char, fg=entity.color)
