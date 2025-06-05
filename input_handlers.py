@@ -57,6 +57,9 @@ class EventHandler:
         """
         raise SystemExit()
     
+    def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[Action]:
+        raise NotImplementedError()
+    
     def dispatch(self, event: tcod.event.Event) -> Optional[Action]:
         """
         分发事件到对应的处理方法
