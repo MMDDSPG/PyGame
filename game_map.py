@@ -28,6 +28,10 @@ class GameMap:
         )  # 玩家之前探索过的地图格子
     
     @property
+    def gamemap(self) -> "GameMap":
+        return self
+
+    @property
     def actors(self) -> Iterator[Actor]:
         """Iterate over this maps living actors."""
         yield from (
