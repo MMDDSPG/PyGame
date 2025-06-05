@@ -32,25 +32,25 @@ def main():
         "dejavu10x10_gs_tc.png", 32, 8, tcod.tileset.CHARMAP_TCOD
     )
 
-    # 创建事件处理器
-    event_handler = EventHandler()
-
-    # 创建玩家和 NPC
+    # 创建玩家
     player = copy.deepcopy(entity_factories.player)
 
+    # 创建引擎
+    engine = Engine(player=player)
+    
+
     # 创建游戏地图
-    game_map = generate_dungeon(
+    engine.game_map = generate_dungeon(
         max_rooms=max_rooms,
         room_min_size=room_min_size,
         room_max_size=room_max_size,
         map_width=map_width,
         map_height=map_height,
         max_monsters_per_room=max_monsters_per_room,
-        player=player
+        engine=engine
     )
 
-    # 创建引擎
-    engine = Engine(event_handler=event_handler, game_map=game_map, player=player)
+    engine.update_fov()
 
     # 创建游戏窗口
     # columns, rows: 窗口尺寸
@@ -68,17 +68,12 @@ def main():
         # order="F" 表示使用 Fortran 风格的内存布局，这通常能提供更好的性能
         root_console = tcod.Console(screen_width, screen_height, order="F")
         
-        # 创建事件处理器
-        event_handler = EventHandler()
-        
         # 游戏主循环
         while True:
            
             engine.render(console=root_console, context=context)
 
-            events = tcod.event.wait()
-
-            engine.handle_events(events=events)
+            engine.event_handler.handle_events()
 
             root_console.clear()
 

@@ -1,15 +1,32 @@
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 
 import tcod.event
 
 from actions import Action, BumpAction, EscapeAction
 
+if TYPE_CHECKING:
+    from engine import Engine
 
 class EventHandler:
     """
     事件处理器协议类
     用于处理游戏中的各种输入事件，并将其转换为对应的游戏动作
     """
+
+    def __init__(self, engine: "Engine"):
+        self.engine = engine
+
+    def handle_events(self) -> None:
+        for event in tcod.event.wait():
+            action = self.dispatch(event)
+
+            if action is None:
+                continue
+
+            action.perform()
+
+            self.engine.handle_enemy_turns()
+            self.engine.update_fov()  # 在玩家下一个动作之前更新 FOV。
     
     def dispatch(self, event: tcod.event.Event) -> Optional[Action]:
         """
@@ -51,19 +68,21 @@ class EventHandler:
         # 获取按下的键
         key = event.sym
 
+        player = self.engine.player
+
         # 根据不同的按键创建对应的移动动作
         if key == tcod.event.K_UP:  # 上方向键
-            action = BumpAction(dx=0, dy=-1)  # 向上移动
+            action = BumpAction(player, dx=0, dy=-1)  # 向上移动
         elif key == tcod.event.K_DOWN:  # 下方向键
-            action = BumpAction(dx=0, dy=1)   # 向下移动
+            action = BumpAction(player, dx=0, dy=1)   # 向下移动
         elif key == tcod.event.K_LEFT:  # 左方向键
-            action = BumpAction(dx=-1, dy=0)  # 向左移动
+            action = BumpAction(player, dx=-1, dy=0)  # 向左移动
         elif key == tcod.event.K_RIGHT:  # 右方向键
-            action = BumpAction(dx=1, dy=0)   # 向右移动
+            action = BumpAction(player, dx=1, dy=0)   # 向右移动
 
         # 处理 ESC 键，创建退出动作
         elif key == tcod.event.K_ESCAPE:
-            action = EscapeAction()
+            action = EscapeAction(player)
 
         # 返回处理后的动作，如果没有匹配的按键则返回 None
         return action
