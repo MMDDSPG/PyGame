@@ -1,29 +1,16 @@
 # 导入 tcod 库，这是一个用于开发 Roguelike 游戏的 Python 库
 import tcod
 import color
-import copy
 import traceback
-
-# 导入动作类
-from engine import Engine
-from input_handlers import EventHandler
-import entity_factories
-from procgen import generate_dungeon
+import exceptions
+from setup_game import new_game
 
 def main():
     # 设置游戏窗口的宽度和高度（以字符为单位）
     screen_width = 80
     screen_height = 50
 
-    map_width = 80
-    map_height = 43
-
-    room_max_size = 10
-    room_min_size = 6
-    max_rooms = 30
-
-    max_monsters_per_room = 2
-    max_items_per_room = 2
+    engine = new_game()
 
     # 加载游戏使用的字体图集
     # dejavu10x10_gs_tc.png: 字体文件
@@ -34,28 +21,6 @@ def main():
         "dejavu10x10_gs_tc.png", 32, 8, tcod.tileset.CHARMAP_TCOD
     )
 
-    # 创建玩家
-    player = copy.deepcopy(entity_factories.player)
-
-    # 创建引擎
-    engine = Engine(player=player)
-    
-
-    # 创建游戏地图
-    engine.game_map = generate_dungeon(
-        max_rooms=max_rooms,
-        room_min_size=room_min_size,
-        room_max_size=room_max_size,
-        map_width=map_width,
-        map_height=map_height,
-        max_monsters_per_room=max_monsters_per_room,
-        max_items_per_room=max_items_per_room,
-        engine=engine
-    )
-
-    engine.update_fov()
-
-    engine.message_log.add_message( "Hello and welcome, adventurer, to yet another dungeon!", color.welcome_text)
 
     # 创建游戏窗口
     # columns, rows: 窗口尺寸
@@ -82,6 +47,13 @@ def main():
                 for event in tcod.event.wait():
                     context.convert_event(event)
                     engine.event_handler.handle_events(event)
+
+            except exceptions.QuitWithoutSaving:
+                raise
+
+            except SystemExit:
+                raise
+
             except Exception:
                 traceback.print_exc() # Print error to stderr.
                 # Then print the error to the message log.
