@@ -70,7 +70,7 @@ def main():
         vsync=True,
     ) as context:
         # 创建主控制台对象
-        root_console = tcod.Console(screen_width, screen_height, order="F")
+        root_console = tcod.console.Console(screen_width, screen_height, order="F")
         
         # 游戏主循环
         while True:

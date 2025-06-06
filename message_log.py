@@ -1,7 +1,7 @@
 from typing import Iterable, List, Reversible, Tuple
 import textwrap
 
-import tcod
+import tcod.console
 
 import color
 
@@ -37,7 +37,7 @@ class MessageLog:
             self.messages.append(Message(text, fg))
 
     def render(
-        self, console: tcod.Console, x: int, y: int, width: int, height: int,
+        self, console: tcod.console.Console, x: int, y: int, width: int, height: int,
     ) -> None:
         """在给定区域渲染此日志。
         `x`、`y`、`width`、`height` 是要渲染到 `console` 上的矩形区域。
@@ -55,7 +55,7 @@ class MessageLog:
     @classmethod
     def render_messages(
         cls,
-        console: tcod.Console,
+        console: tcod.console.Console,
         x: int,
         y: int,
         width: int,

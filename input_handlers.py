@@ -1,6 +1,7 @@
 from typing import Callable, Optional, Tuple, TYPE_CHECKING
 
 import tcod.event
+import tcod.console
 import actions
 
 from actions import (
@@ -19,43 +20,43 @@ if TYPE_CHECKING:
 
 MOVE_KEYS = {
     # Arrow keys.
-    tcod.event.K_UP: (0, -1),
-    tcod.event.K_DOWN: (0, 1),
-    tcod.event.K_LEFT: (-1, 0),
-    tcod.event.K_RIGHT: (1, 0),
-    tcod.event.K_HOME: (-1, -1),
-    tcod.event.K_END: (-1, 1),
-    tcod.event.K_PAGEUP: (1, -1),
-    tcod.event.K_PAGEDOWN: (1, 1),
-     # Numpad keys.
-    tcod.event.K_KP_1: (-1, 1),
-    tcod.event.K_KP_2: (0, 1),
-    tcod.event.K_KP_3: (1, 1),
-    tcod.event.K_KP_4: (-1, 0),
-    tcod.event.K_KP_6: (1, 0),
-    tcod.event.K_KP_7: (-1, -1),
-    tcod.event.K_KP_8: (0, -1),
-    tcod.event.K_KP_9: (1, -1),
+    tcod.event.KeySym.UP: (0, -1),
+    tcod.event.KeySym.DOWN: (0, 1),
+    tcod.event.KeySym.LEFT: (-1, 0),
+    tcod.event.KeySym.RIGHT: (1, 0),
+    tcod.event.KeySym.HOME: (-1, -1),
+    tcod.event.KeySym.END: (-1, 1),
+    tcod.event.KeySym.PAGEUP: (1, -1),
+    tcod.event.KeySym.PAGEDOWN: (1, 1),
+    # Numpad keys.
+    tcod.event.KeySym.KP_1: (-1, 1),
+    tcod.event.KeySym.KP_2: (0, 1),
+    tcod.event.KeySym.KP_3: (1, 1),
+    tcod.event.KeySym.KP_4: (-1, 0),
+    tcod.event.KeySym.KP_6: (1, 0),
+    tcod.event.KeySym.KP_7: (-1, -1),
+    tcod.event.KeySym.KP_8: (0, -1),
+    tcod.event.KeySym.KP_9: (1, -1),
     # Vi keys.
-    tcod.event.K_h: (-1, 0),
-    tcod.event.K_j: (0, 1),
-    tcod.event.K_k: (0, -1),
-    tcod.event.K_l: (1, 0),
-    tcod.event.K_y: (-1, -1),
-    tcod.event.K_u: (1, -1),
-    tcod.event.K_b: (-1, 1),
-    tcod.event.K_n: (1, 1),
+    tcod.event.KeySym.h: (-1, 0),
+    tcod.event.KeySym.j: (0, 1),
+    tcod.event.KeySym.k: (0, -1),
+    tcod.event.KeySym.l: (1, 0),
+    tcod.event.KeySym.y: (-1, -1),
+    tcod.event.KeySym.u: (1, -1),
+    tcod.event.KeySym.b: (-1, 1),
+    tcod.event.KeySym.n: (1, 1),
 }
 
 WAIT_KEYS = {
-    tcod.event.K_PERIOD,
-    tcod.event.K_KP_5,
-    tcod.event.K_CLEAR,
+    tcod.event.KeySym.PERIOD,
+    tcod.event.KeySym.KP_5,
+    tcod.event.KeySym.CLEAR,
 }
 
 CONFIRM_KEYS = {
-    tcod.event.K_RETURN,
-    tcod.event.K_KP_ENTER,
+    tcod.event.KeySym.RETURN,
+    tcod.event.KeySym.KP_ENTER,
 }
 
 class EventHandler:
@@ -94,7 +95,7 @@ class EventHandler:
         """
         raise SystemExit()
     
-    def on_render(self, console: tcod.Console) -> None:
+    def on_render(self, console: tcod.console.Console) -> None:
         self.engine.render(console)
     
     def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[Action]:
@@ -159,17 +160,17 @@ class MainGameEventHandler(EventHandler):
         elif key in WAIT_KEYS:
             action = WaitAction(player)
         # 处理 ESC 键，创建退出动作
-        elif key == tcod.event.K_ESCAPE:
+        elif key == tcod.event.KeySym.ESCAPE:
             action = EscapeAction(player)
-        elif key == tcod.event.K_v:
+        elif key == tcod.event.KeySym.v:
             self.engine.event_handler = HistoryViewer(self.engine)
-        elif key == tcod.event.K_g:
+        elif key == tcod.event.KeySym.g:
             action = PickupAction(player)
-        elif key == tcod.event.K_i:
+        elif key == tcod.event.KeySym.i:
             self.engine.event_handler = InventoryActivateHandler(self.engine)
-        elif key == tcod.event.K_d:
+        elif key == tcod.event.KeySym.d:
             self.engine.event_handler = InventoryDropHandler(self.engine)
-        elif key == tcod.event.K_SLASH:
+        elif key == tcod.event.KeySym.SLASH:
             self.engine.event_handler = LookHandler(self.engine)
             
         # 返回处理后的动作，如果没有匹配的按键则返回 None
@@ -178,14 +179,14 @@ class MainGameEventHandler(EventHandler):
 class GameOverEventHandler(EventHandler):
 
     def ev_keydown(self, event: tcod.event.KeyDown) -> None:
-        if event.sym == tcod.event.K_ESCAPE:
+        if event.sym == tcod.event.KeySym.ESCAPE:
             raise SystemExit()
     
 CURSOR_Y_KEYS = {
-   tcod.event.K_UP: -1,
-   tcod.event.K_DOWN: 1,
-   tcod.event.K_PAGEUP: -10,
-   tcod.event.K_PAGEDOWN: 10,
+    tcod.event.KeySym.UP: -1,
+    tcod.event.KeySym.DOWN: 1,
+    tcod.event.KeySym.PAGEUP: -10,
+    tcod.event.KeySym.PAGEDOWN: 10,
 }
 
 
@@ -197,10 +198,10 @@ class HistoryViewer(EventHandler):
         self.log_length = len(engine.message_log.messages)
         self.cursor = self.log_length - 1
 
-    def on_render(self, console: tcod.Console) -> None:
+    def on_render(self, console: tcod.console.Console) -> None:
         super().on_render(console)  # 将主状态绘制为背景
 
-        log_console = tcod.Console(console.width - 6, console.height - 6)
+        log_console = tcod.console.Console(console.width - 6, console.height - 6)
 
         # 绘制带有自定义横幅标题的框架
         log_console.draw_frame(0, 0, log_console.width, log_console.height)
@@ -282,7 +283,7 @@ class InventoryEventHandler(AskUserEventHandler):
 
     TITLE = "<missing title>"
 
-    def on_render(self, console: tcod.Console) -> None:
+    def on_render(self, console: tcod.console.Console) -> None:
         """Render an inventory menu, which displays the items in the inventory, and the letter to select them.
         Will move to a different position based on where the player is located, so the player can always see where
         they are.
@@ -367,7 +368,7 @@ class SelectIndexHandler(AskUserEventHandler):
         player = self.engine.player
         engine.mouse_location = player.x, player.y
 
-    def on_render(self, console: tcod.Console) -> None:
+    def on_render(self, console: tcod.console.Console) -> None:
         """Highlight the tile under the cursor."""
         super().on_render(console)
         x, y = self.engine.mouse_location
@@ -438,7 +439,7 @@ class AreaRangedAttackHandler(SelectIndexHandler):
         self.radius = radius
         self.callback = callback
 
-    def on_render(self, console: tcod.Console) -> None:
+    def on_render(self, console: tcod.console.Console) -> None:
         """高亮选中的区域"""
         super().on_render(console)
         x, y = self.engine.mouse_location
