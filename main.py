@@ -70,7 +70,6 @@ def main():
         vsync=True,
     ) as context:
         # 创建主控制台对象
-        # order="F" 表示使用 Fortran 风格的内存布局，这通常能提供更好的性能
         root_console = tcod.Console(screen_width, screen_height, order="F")
         
         # 游戏主循环
