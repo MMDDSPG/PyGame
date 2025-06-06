@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-from typing import List, Tuple, TYPE_CHECKING
+import random
+from typing import List, Optional, Tuple, TYPE_CHECKING
 
 import numpy as np  # type: ignore
 import tcod
 
-from actions import Action, MeleeAction, MovementAction, WaitAction
+from actions import Action, BumpAction, MeleeAction, MovementAction, WaitAction
 
 
 if TYPE_CHECKING:
@@ -69,3 +70,35 @@ class HostileEnemy(BaseAI):
             ).perform()
 
         return WaitAction(self.entity).perform()
+    
+class ConfusedEnemy(BaseAI):
+    """一个困惑的敌人会随机移动。"""
+    def __init__(self, entity: "Actor", previous_ai: Optional[BaseAI], turns_remaining: int):
+        super().__init__(entity)
+        self.previous_ai = previous_ai
+        self.turns_remaining = turns_remaining
+        
+    def perform(self) -> None:
+        """随机移动。"""
+        if self.turns_remaining <= 0:
+            self.engine.message_log.add_message(
+                "The {self.entity.name} is no longer confused.")
+            self.entity.ai = self.previous_ai
+        else:
+            # 随机选择一个方向
+            direction_x, direction_y = random.choice(
+                [
+                    (-1, -1),  # Northwest
+                    (0, -1),  # North
+                    (1, -1),  # Northeast
+                    (-1, 0),  # West
+                    (1, 0),  # East
+                    (-1, 1),  # Southwest
+                    (0, 1),  # South
+                    (1, 1),  # Southeast
+                ]
+            )
+            self.turns_remaining -= 1
+            # 演员可能会尝试在选定的随机方向移动或攻击。
+            # 演员可能会在墙上撞到墙，浪费一个回合。
+            return BumpAction(self.entity, direction_x, direction_y,).perform()

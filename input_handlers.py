@@ -1,4 +1,4 @@
-from typing import Optional, TYPE_CHECKING
+from typing import Callable, Optional, Tuple, TYPE_CHECKING
 
 import tcod.event
 import actions
@@ -53,6 +53,11 @@ WAIT_KEYS = {
     tcod.event.K_CLEAR,
 }
 
+CONFIRM_KEYS = {
+    tcod.event.K_RETURN,
+    tcod.event.K_KP_ENTER,
+}
+
 class EventHandler:
     def __init__(self, engine: "Engine"):
         self.engine = engine
@@ -95,6 +100,10 @@ class EventHandler:
     def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[Action]:
         raise NotImplementedError()
     
+    def ev_mousebuttondown(self, event: tcod.event.MouseButtonDown) -> Optional[Action]:
+        # raise NotImplementedError()
+        pass
+    
     def dispatch(self, event: tcod.event.Event) -> Optional[Action]:
         """
         分发事件到对应的处理方法
@@ -111,6 +120,8 @@ class EventHandler:
             return self.ev_keydown(event)
         elif isinstance(event, tcod.event.MouseMotion):
             return self.ev_mousemotion(event)
+        elif isinstance(event, tcod.event.MouseButtonDown):
+            return self.ev_mousebuttondown(event)
         return None
     
 
@@ -158,7 +169,9 @@ class MainGameEventHandler(EventHandler):
             self.engine.event_handler = InventoryActivateHandler(self.engine)
         elif key == tcod.event.K_d:
             self.engine.event_handler = InventoryDropHandler(self.engine)
-
+        elif key == tcod.event.K_SLASH:
+            self.engine.event_handler = LookHandler(self.engine)
+            
         # 返回处理后的动作，如果没有匹配的按键则返回 None
         return action
     
@@ -344,3 +357,76 @@ class InventoryDropHandler(InventoryEventHandler):
     def on_item_selected(self, item: "Item") -> Optional[Action]:
         """Drop this item."""
         return actions.DropItem(self.engine.player, item)
+    
+# 选择地图位置
+class SelectIndexHandler(AskUserEventHandler):
+    """处理用户选择一个地图地点。"""
+
+    def __init__(self, engine: "Engine"):
+        super().__init__(engine)
+        player = self.engine.player
+        engine.mouse_location = player.x, player.y
+
+    def on_render(self, console: tcod.Console) -> None:
+        """Highlight the tile under the cursor."""
+        super().on_render(console)
+        x, y = self.engine.mouse_location
+        console.rgb["bg"][x, y] = color.white
+        console.rgb["fg"][x, y] = color.black
+
+    def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[Action]:
+        """检查按键是否移动或确认按键"""
+        key = event.sym
+        if key in MOVE_KEYS:
+            modifier = 1 
+            if event.mod & (tcod.event.KMOD_LSHIFT | tcod.event.KMOD_RSHIFT):
+                modifier *= 5
+            if event.mod & (tcod.event.KMOD_LCTRL | tcod.event.KMOD_RCTRL):
+                modifier *= 10
+            if event.mod & (tcod.event.KMOD_LALT | tcod.event.KMOD_RALT):
+                modifier *= 20
+                
+            x, y = self.engine.mouse_location
+            dx, dy = MOVE_KEYS[key]
+            x += dx * modifier
+            y += dy * modifier
+            x = max(0, min(x, self.engine.game_map.width - 1))
+            y = max(0, min(y, self.engine.game_map.height - 1))
+            self.engine.mouse_location = x, y
+            return None
+
+        elif key in CONFIRM_KEYS:
+            return self.on_index_selected(*self.engine.mouse_location)
+        
+        return super().ev_keydown(event)
+    
+    def ev_mousebuttondown(self, event: tcod.event.MouseButtonDown) -> Optional[Action]:
+        """鼠标点击事件"""
+        if self.engine.game_map.in_bounds(*event.tile):
+            if event.button == 1:
+                return self.on_index_selected(*event.tile)
+            
+        return super().ev_mousebuttondown(event)
+
+
+    def on_index_selected(self, x: int, y: int) -> Optional[Action]:
+        """当用户选择一个位置时调用"""
+        raise NotImplementedError()
+    
+# 查看位置
+class LookHandler(SelectIndexHandler):
+    """处理查看位置的请求。"""
+    def on_index_selected(self, x: int, y: int) -> None:
+        """Return to main handler."""
+        self.engine.event_handler = MainGameEventHandler(self.engine)
+
+# 单次远程选择攻击
+class SingleRangedAttackHandler(SelectIndexHandler):
+    """处理针对单个敌人的操作。只有选定的敌人会受到影响"""
+    def __init__(self, engine: "Engine", callback: Callable[[Tuple[int, int]], Optional[Action]]):
+        super().__init__(engine)
+        self.callback = callback
+
+    def on_index_selected(self, x: int, y: int) -> Optional[Action]:
+        return self.callback((x, y))
+        
