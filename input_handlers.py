@@ -206,9 +206,9 @@ class HistoryViewer(EventHandler):
         # 绘制带有自定义横幅标题的框架
         log_console.draw_frame(0, 0, log_console.width, log_console.height)
         log_console.print(
-            x=0,
+            x=log_console.width // 2,
             y=0,
-            string="┤消息历史├",
+            string="┤History├",
             alignment=tcod.constants.CENTER
         )
 
@@ -306,17 +306,22 @@ class InventoryEventHandler(AskUserEventHandler):
 
         y = 0
 
-        width = len(self.TITLE) + 4
+        # 计算标题的宽度
+        title_width = len(self.TITLE)
+        # 计算最长的物品名称长度
+        max_item_width = max(
+            (len(item.name) for item in self.engine.player.inventory.items),
+            default=0
+        )
+        # 物品名称前需要加上 "(a) " 这样的前缀，所以加4
+        width = max(title_width, max_item_width + 4) + 4
 
-        console.draw_frame(
-            x=x,
+        console.draw_frame(x=x,y=y,width=width,height=height)
+        console.print(
+            x=x + width // 2,
             y=y,
-            width=width,
-            height=height,
-            title=self.TITLE,
-            clear=True,
-            fg=(255, 255, 255),
-            bg=(0, 0, 0),
+            string=self.TITLE,
+            alignment=tcod.constants.CENTER
         )
 
         if number_of_items_in_inventory > 0:
@@ -347,7 +352,7 @@ class InventoryEventHandler(AskUserEventHandler):
 class InventoryActivateHandler(InventoryEventHandler):
     """处理使用物品栏中的物品。"""
 
-    TITLE = "选择要使用的物品"
+    TITLE = "Use Item"
 
     def on_item_selected(self, item: "Item") -> Optional[Action]:
         """Return the action for the selected item."""
@@ -356,7 +361,7 @@ class InventoryActivateHandler(InventoryEventHandler):
 class InventoryDropHandler(InventoryEventHandler):
     """处理丢弃物品栏中的物品。"""
 
-    TITLE = "选择要丢弃的物品"
+    TITLE = "Drop Item"
 
     def on_item_selected(self, item: "Item") -> Optional[Action]:
         """Drop this item."""
