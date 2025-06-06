@@ -430,3 +430,28 @@ class SingleRangedAttackHandler(SelectIndexHandler):
     def on_index_selected(self, x: int, y: int) -> Optional[Action]:
         return self.callback((x, y))
         
+# 范围远程选择攻击
+class AreaRangedAttackHandler(SelectIndexHandler):
+    """处理范围远程选择攻击"""
+    def __init__(self, engine: "Engine", radius: int , callback: Callable[[Tuple[int, int]], Optional[Action]]):
+        super().__init__(engine)
+        self.radius = radius
+        self.callback = callback
+
+    def on_render(self, console: tcod.Console) -> None:
+        """高亮选中的区域"""
+        super().on_render(console)
+        x, y = self.engine.mouse_location
+
+        # 画一个矩形框，让玩家可以看到受影响的方块
+        console.draw_frame(
+            x=x - self.radius - 1,
+            y=y - self.radius - 1,
+            width=self.radius ** 2,
+            height=self.radius ** 2,
+            fg=color.red,
+            clear=False,
+        )
+
+    def on_index_selected(self, x: int, y: int) -> Optional[Action]:
+        return self.callback((x, y))
