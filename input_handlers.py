@@ -205,8 +205,11 @@ class HistoryViewer(EventHandler):
 
         # 绘制带有自定义横幅标题的框架
         log_console.draw_frame(0, 0, log_console.width, log_console.height)
-        log_console.print_box(
-            0, 0, log_console.width, 1, "┤消息历史├", alignment=tcod.CENTER
+        log_console.print(
+            x=0,
+            y=0,
+            string="┤消息历史├",
+            alignment=tcod.constants.CENTER
         )
 
         # 使用光标参数渲染消息日志
@@ -233,9 +236,9 @@ class HistoryViewer(EventHandler):
             else:
                 # 否则在保持限制在历史日志边界内的情况下移动
                 self.cursor = max(0, min(self.cursor + adjust, self.log_length - 1))
-        elif event.sym == tcod.event.K_HOME:
+        elif event.sym == tcod.event.KeySym.HOME:
             self.cursor = 0  # 直接移动到顶部消息
-        elif event.sym == tcod.event.K_END:
+        elif event.sym == tcod.event.KeySym.END:
             self.cursor = self.log_length - 1  # 直接移动到最后一条消息
         else:  # 任何其他键都会返回到主游戏状态
             self.engine.event_handler = MainGameEventHandler(self.engine)
@@ -253,12 +256,12 @@ class AskUserEventHandler(EventHandler):
     def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[Action]:
         """默认情况下，任何键都会退出此输入处理器。"""
         if event.sym in {  # 忽略修饰键
-            tcod.event.K_LSHIFT,
-            tcod.event.K_RSHIFT,
-            tcod.event.K_LCTRL,
-            tcod.event.K_RCTRL,
-            tcod.event.K_LALT,
-            tcod.event.K_RALT,
+            tcod.event.KeySym.LSHIFT,
+            tcod.event.KeySym.RSHIFT,
+            tcod.event.KeySym.LCTRL,
+            tcod.event.KeySym.RCTRL,
+            tcod.event.KeySym.LALT,
+            tcod.event.KeySym.RALT,
         }:
             return None
         return self.on_exit()
@@ -326,7 +329,7 @@ class InventoryEventHandler(AskUserEventHandler):
     def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[Action]:
         player = self.engine.player
         key = event.sym
-        index = key - tcod.event.K_a
+        index = key - tcod.event.KeySym.a
 
         if 0 <= index <= 26:
             try:
