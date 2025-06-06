@@ -14,7 +14,7 @@ class Message:
 
     @property
     def full_text(self) -> str:
-        """The full text of this message, including the count if necessary."""
+        """此消息的完整文本，必要时包括计数。"""
         if self.count > 1:
             return f"{self.plain_text} (x{self.count})"
         return self.plain_text
@@ -27,10 +27,9 @@ class MessageLog:
     def add_message(
         self, text: str, fg: Tuple[int, int, int] = color.white, *, stack: bool = True,
     ) -> None:
-        """Add a message to this log.
-        `text` is the message text, `fg` is the text color.
-        If `stack` is True then the message can stack with a previous message
-        of the same text.
+        """向日志添加一条消息。
+        `text` 是消息文本，`fg` 是文本颜色。
+        如果 `stack` 为 True，则消息可以与相同文本的前一条消息堆叠。
         """
         if stack and self.messages and text == self.messages[-1].plain_text:
             self.messages[-1].count += 1
@@ -40,16 +39,15 @@ class MessageLog:
     def render(
         self, console: tcod.Console, x: int, y: int, width: int, height: int,
     ) -> None:
-        """Render this log over the given area.
-        `x`, `y`, `width`, `height` is the rectangular region to render onto
-        the `console`.
+        """在给定区域渲染此日志。
+        `x`、`y`、`width`、`height` 是要渲染到 `console` 上的矩形区域。
         """
         self.render_messages(console, x, y, width, height, self.messages)
 
     @staticmethod
     def wrap(string: str, width: int) -> Iterable[str]:
-        """Return a wrapped text message."""
-        for line in string.splitlines():  # Handle newlines in messages.
+        """返回一个换行的文本消息。"""
+        for line in string.splitlines():  # 处理消息中的换行符
             yield from textwrap.wrap(
                 line, width, expand_tabs=True,
             )
@@ -64,9 +62,8 @@ class MessageLog:
         height: int,
         messages: Reversible[Message],
     ) -> None:
-        """Render the messages provided.
-        The `messages` are rendered starting at the last message and working
-        backwards.
+        """渲染提供的消息。
+        消息从最后一条开始向后渲染。
         """
         y_offset = height - 1
 
@@ -75,4 +72,4 @@ class MessageLog:
                 console.print(x=x, y=y + y_offset, string=line, fg=message.fg)
                 y_offset -= 1
                 if y_offset < 0:
-                    return  # No more space to print messages.
+                    return  # 没有更多空间打印消息

@@ -1,4 +1,3 @@
-
 from __future__ import annotations
 
 from typing import Optional, Tuple, TYPE_CHECKING
@@ -16,22 +15,22 @@ class Action:
 
     @property
     def engine(self) -> Engine:
-        """Return the engine this action belongs to."""
+        """返回此动作所属的引擎。"""
         return self.entity.gamemap.engine
 
     def perform(self) -> None:
-        """Perform this action with the objects needed to determine its scope.
+        """使用确定其范围所需的对象执行此动作。
 
-        `self.engine` is the scope this action is being performed in.
+        `self.engine` 是执行此动作的范围。
 
-        `self.entity` is the object performing the action.
+        `self.entity` 是执行动作的对象。
 
-        This method must be overridden by Action subclasses.
+        此方法必须由 Action 子类重写。
         """
         raise NotImplementedError()
     
 class PickupAction(Action):
-    """Pickup an item and add it to the inventory, if there is room for it."""
+    """拾取物品并将其添加到物品栏中，如果有空间的话。"""
 
     def __init__(self, entity: Actor):
         super().__init__(entity)
@@ -67,11 +66,11 @@ class ItemAction(Action):
 
     @property
     def target_actor(self) -> Optional[Actor]:
-        """Return the actor at this actions destination."""
+        """返回此动作目标位置的角色。"""
         return self.engine.game_map.get_actor_at_location(*self.target_xy)
 
     def perform(self) -> None:
-        """Invoke the items ability, this action will be given to provide context."""
+        """调用物品的能力，此动作将提供上下文。"""
         self.item.consumable.activate(self)
 
 class EscapeAction(Action):
@@ -96,17 +95,17 @@ class ActionWithDirection(Action):
 
     @property
     def dest_xy(self) -> Tuple[int, int]:
-        """Returns this actions destination."""
+        """返回此动作的目标位置。"""
         return self.entity.x + self.dx, self.entity.y + self.dy
 
     @property
     def blocking_entity(self) -> Optional[Entity]:
-        """Return the blocking entity at this actions destination.."""
+        """返回此动作目标位置的阻挡实体。"""
         return self.engine.game_map.get_blocking_entity_at_location(*self.dest_xy)
     
     @property
     def target_actor(self) -> Optional[Actor]:
-        """Return the actor at this actions destination."""
+        """返回此动作目标位置的角色。"""
         return self.engine.game_map.get_actor_at_location(*self.dest_xy)
 
     def perform(self) -> None:
@@ -140,16 +139,16 @@ class MovementAction(ActionWithDirection):
         dest_x, dest_y = self.dest_xy
 
         if not self.engine.game_map.in_bounds(dest_x, dest_y):
-            # Destination is out of bounds.
+            # 目标位置超出边界
             raise exceptions.Impossible("That way is blocked.")
         
         if not self.engine.game_map.tiles["walkable"][dest_x, dest_y]:
-            # Destination is blocked by a tile.
+            # 目标位置被地形阻挡
             raise exceptions.Impossible("That way is blocked.")
         
 
         if self.engine.game_map.get_blocking_entity_at_location(dest_x, dest_y):
-            # Destination is blocked by an entity.
+            # 目标位置被实体阻挡
             raise exceptions.Impossible("That way is blocked.")
 
         self.entity.move(self.dx, self.dy)

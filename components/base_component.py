@@ -7,7 +7,7 @@ if TYPE_CHECKING:
 
 
 class BaseComponent:
-    parent: "Entity"  # Owning entity instance.
+    parent: "Entity"  # 所属实体实例
 
     @property
     def gamemap(self) -> "GameMap":

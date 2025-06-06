@@ -33,7 +33,7 @@ class GameMap:
 
     @property
     def actors(self) -> Iterator[Actor]:
-        """Iterate over this maps living actors."""
+        """遍历地图上所有存活的角色。"""
         yield from (
             entity
             for entity in self.entities
@@ -64,7 +64,7 @@ class GameMap:
         return None
 
     def in_bounds(self, x: int, y: int) -> bool:
-        """Return True if x and y are inside of the bounds of this map."""
+        """如果x和y在地图边界内则返回True。"""
         return 0 <= x < self.width and 0 <= y < self.height
 
     def render(self, console: Console) -> None:

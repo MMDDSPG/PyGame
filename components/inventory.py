@@ -15,7 +15,7 @@ class Inventory(BaseComponent):
 
     def drop(self, item: "Item") -> None:
         """
-        Removes an item from the inventory and restores it to the game map, at the player's current location.
+        从物品栏中移除物品并将其恢复到游戏地图中，在玩家当前位置。
         """
         self.items.remove(item)
         item.place(self.parent.x, self.parent.y, self.gamemap)

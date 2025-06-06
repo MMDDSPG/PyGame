@@ -61,8 +61,8 @@ class EventHandler:
         self.handle_action(self.dispatch(event))
     
     def handle_action(self, action: Optional[Action]) -> bool:
-        """Handle actions returned from event methods.
-        Returns True if the action will advance a turn."""
+        """处理从事件方法返回的动作。
+        如果动作会推进一个回合则返回True。"""
 
         if action is None:
             return False
@@ -71,7 +71,7 @@ class EventHandler:
             action.perform()
         except exceptions.Impossible as exc:
             self.engine.message_log.add_message(exc.args[0], color.impossible)
-            return False  # Skip enemy turn on exceptions.
+            return False  # 发生异常时跳过敌人回合
         self.engine.handle_enemy_turns()
         self.engine.update_fov()
 
@@ -177,7 +177,7 @@ CURSOR_Y_KEYS = {
 
 
 class HistoryViewer(EventHandler):
-    """Print the history on a larger window which can be navigated."""
+    """在可导航的较大窗口中打印历史记录。"""
 
     def __init__(self, engine: "Engine"):
         super().__init__(engine)
@@ -185,17 +185,17 @@ class HistoryViewer(EventHandler):
         self.cursor = self.log_length - 1
 
     def on_render(self, console: tcod.Console) -> None:
-        super().on_render(console)  # Draw the main state as the background.
+        super().on_render(console)  # 将主状态绘制为背景
 
         log_console = tcod.Console(console.width - 6, console.height - 6)
 
-        # Draw a frame with a custom banner title.
+        # 绘制带有自定义横幅标题的框架
         log_console.draw_frame(0, 0, log_console.width, log_console.height)
         log_console.print_box(
-            0, 0, log_console.width, 1, "┤Message history├", alignment=tcod.CENTER
+            0, 0, log_console.width, 1, "┤消息历史├", alignment=tcod.CENTER
         )
 
-        # Render the message log using the cursor parameter.
+        # 使用光标参数渲染消息日志
         self.engine.message_log.render_messages(
             log_console,
             1,
@@ -207,38 +207,38 @@ class HistoryViewer(EventHandler):
         log_console.blit(console, 3, 3)
 
     def ev_keydown(self, event: tcod.event.KeyDown) -> None:
-        # Fancy conditional movement to make it feel right.
+        # 花哨的条件移动，使其感觉正确
         if event.sym in CURSOR_Y_KEYS:
             adjust = CURSOR_Y_KEYS[event.sym]
             if adjust < 0 and self.cursor == 0:
-                # Only move from the top to the bottom when you're on the edge.
+                # 只有在边缘时才从顶部移动到底部
                 self.cursor = self.log_length - 1
             elif adjust > 0 and self.cursor == self.log_length - 1:
-                # Same with bottom to top movement.
+                # 同样适用于从底部到顶部的移动
                 self.cursor = 0
             else:
-                # Otherwise move while staying clamped to the bounds of the history log.
+                # 否则在保持限制在历史日志边界内的情况下移动
                 self.cursor = max(0, min(self.cursor + adjust, self.log_length - 1))
         elif event.sym == tcod.event.K_HOME:
-            self.cursor = 0  # Move directly to the top message.
+            self.cursor = 0  # 直接移动到顶部消息
         elif event.sym == tcod.event.K_END:
-            self.cursor = self.log_length - 1  # Move directly to the last message.
-        else:  # Any other key moves back to the main game state.
+            self.cursor = self.log_length - 1  # 直接移动到最后一条消息
+        else:  # 任何其他键都会返回到主游戏状态
             self.engine.event_handler = MainGameEventHandler(self.engine)
 
 class AskUserEventHandler(EventHandler):
-    """Handles user input for actions which require special input."""
+    """处理需要特殊输入的动作的用户输入。"""
 
     def handle_action(self, action: Optional[Action]) -> bool:
-        """Return to the main event handler when a valid action was performed."""
+        """当执行了有效动作时返回到主事件处理器。"""
         if super().handle_action(action):
             self.engine.event_handler = MainGameEventHandler(self.engine)
             return True
         return False
 
     def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[Action]:
-        """By default any key exits this input handler."""
-        if event.sym in {  # Ignore modifier keys.
+        """默认情况下，任何键都会退出此输入处理器。"""
+        if event.sym in {  # 忽略修饰键
             tcod.event.K_LSHIFT,
             tcod.event.K_RSHIFT,
             tcod.event.K_LCTRL,
@@ -262,9 +262,9 @@ class AskUserEventHandler(EventHandler):
         return None
     
 class InventoryEventHandler(AskUserEventHandler):
-    """This handler lets the user select an item.
+    """此处理器让用户选择一个物品。
 
-    What happens then depends on the subclass.
+    然后发生的事情取决于子类。
     """
 
     TITLE = "<missing title>"
@@ -328,18 +328,18 @@ class InventoryEventHandler(AskUserEventHandler):
         raise NotImplementedError()
     
 class InventoryActivateHandler(InventoryEventHandler):
-    """Handle using an inventory item."""
+    """处理使用物品栏中的物品。"""
 
-    TITLE = "Select an item to use"
+    TITLE = "选择要使用的物品"
 
     def on_item_selected(self, item: "Item") -> Optional[Action]:
         """Return the action for the selected item."""
         return item.consumable.get_action(self.engine.player)
     
 class InventoryDropHandler(InventoryEventHandler):
-    """Handle dropping an inventory item."""
+    """处理丢弃物品栏中的物品。"""
 
-    TITLE = "Select an item to drop"
+    TITLE = "选择要丢弃的物品"
 
     def on_item_selected(self, item: "Item") -> Optional[Action]:
         """Drop this item."""

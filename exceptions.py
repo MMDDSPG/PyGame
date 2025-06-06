@@ -1,5 +1,5 @@
 class Impossible(Exception):
-    """Exception raised when an action is impossible to be performed.
+    """当动作无法执行时引发的异常。
 
-    The reason is given as the exception message.
+    原因作为异常消息给出。
     """

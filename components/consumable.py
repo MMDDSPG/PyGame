@@ -14,18 +14,18 @@ class Consumable(BaseComponent):
     parent: "Item"
 
     def get_action(self, consumer: "Actor") -> Optional[actions.Action]:
-        """Try to return the action for this item."""
+        """尝试返回此物品的动作。"""
         return actions.ItemAction(consumer, self.parent)
 
     def activate(self, action: actions.ItemAction) -> None:
-        """Invoke this items ability.
+        """调用此物品的能力。
 
-        `action` is the context for this activation.
+        `action` 是此激活的上下文。
         """
         raise NotImplementedError()
     
     def consume(self) -> None:
-        """Remove the consumed item from its containing inventory."""
+        """从包含的物品栏中移除已消耗的物品。"""
         entity = self.parent
         inventory = entity.parent
         if isinstance(inventory, components.inventory.Inventory):

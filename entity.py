@@ -37,7 +37,7 @@ class Entity:
         self.blocks_movement = blocks_movement
         self.render_order = render_order
         if parent:
-            # If gamemap isn't provided now then it will be set later.
+            # 如果游戏地图现在没有提供，稍后会设置
             self.gamemap = parent
             parent.entities.add(self)
 
@@ -60,12 +60,12 @@ class Entity:
         self.y += dy
 
     def place(self, x: int, y: int, gamemap: Optional["GameMap"] = None) -> None:
-        """Place this entity at a new location.  Handles moving across GameMaps."""
+        """将实体放置在新位置。处理跨游戏地图的移动。"""
         self.x = x
         self.y = y
         if gamemap:
             if hasattr(self, "parent"): 
-                if self.parent is self.gamemap: # Possibly uninitialized.
+                if self.parent is self.gamemap: # 可能未初始化
                     self.gamemap.entities.remove(self)
             self.parent = gamemap
             gamemap.entities.add(self)
@@ -103,7 +103,7 @@ class Actor(Entity):
 
     @property
     def is_alive(self) -> bool:
-       """Returns True as long as this actor can perform actions."""
+       """只要这个角色还能执行动作就返回True。"""
        return bool(self.ai)
     
 class Item(Entity):

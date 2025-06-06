@@ -54,7 +54,7 @@ class HostileEnemy(BaseAI):
         target = self.engine.player
         dx = target.x - self.entity.x
         dy = target.y - self.entity.y
-        distance = max(abs(dx), abs(dy))  # Chebyshev distance.
+        distance = max(abs(dx), abs(dy))  # 切比雪夫距离
 
         if self.engine.game_map.visible[self.entity.x, self.entity.y]:
             if distance <= 1:
