@@ -522,15 +522,10 @@ class AreaRangedAttackHandler(SelectIndexHandler):
         super().on_render(console)
         x, y = self.engine.mouse_location
 
-        # 画一个矩形框，让玩家可以看到受影响的方块
-        console.draw_frame(
-            x=x - self.radius - 1,
-            y=y - self.radius - 1,
-            width=self.radius ** 2,
-            height=self.radius ** 2,
-            fg=color.red,
-            clear=False,
-        )
+        for c_x in range(x - self.radius - 1, x + self.radius + 1):
+            for c_y in range(y - self.radius - 1, y + self.radius + 1):
+                if (c_x - x) ** 2 + (c_y - y) ** 2 <= self.radius ** 2:
+                    console.rgb["bg"][c_x, c_y] = color.red
 
     def on_index_selected(self, x: int, y: int) -> Optional[Action]:
         return self.callback((x, y))
