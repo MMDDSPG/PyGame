@@ -1,8 +1,9 @@
-from typing import Callable, Optional, Tuple, TYPE_CHECKING
+from typing import Callable, Optional, Tuple, TYPE_CHECKING, Union
 
 import tcod.event
 import tcod.console
 import actions
+import os
 
 from actions import (
     Action,
@@ -59,12 +60,57 @@ CONFIRM_KEYS = {
     tcod.event.KeySym.KP_ENTER,
 }
 
-class EventHandler:
+ActionOrHandler = Union[Action, "BaseEventHandler"]
+
+class BaseEventHandler:
+    def handle_events(self, event: tcod.event.Event) -> "BaseEventHandler":
+        state = self.dispatch(event)
+        if isinstance(state, BaseEventHandler):
+            return state
+        
+        assert not isinstance(state, Action), f"{self!r} can not handle actions."
+
+        return self
+    
+    def on_render(self, console: tcod.Console) -> None:
+        raise NotImplementedError()
+    
+    def ev_quit(self, event: tcod.event.Quit) -> Optional[Action]:
+        raise SystemExit()
+    
+    def dispatch(self, event: tcod.event.Event) -> Optional[Action]:
+        """
+        分发事件到对应的处理方法
+        
+        参数:
+            event: 事件对象
+        
+        返回:
+            对应的游戏动作，如果没有匹配的动作则返回 None
+        """
+        if isinstance(event, tcod.event.Quit):
+            return self.ev_quit(event)
+        elif isinstance(event, tcod.event.KeyDown):
+            return self.ev_keydown(event)
+        elif isinstance(event, tcod.event.MouseMotion):
+            return self.ev_mousemotion(event)
+        elif isinstance(event, tcod.event.MouseButtonDown):
+            return self.ev_mousebuttondown(event)
+        return None
+
+class EventHandler(BaseEventHandler):
     def __init__(self, engine: "Engine"):
         self.engine = engine
 
-    def handle_events(self, event: tcod.event.Event) -> None:
-        self.handle_action(self.dispatch(event))
+    def handle_events(self, event: tcod.event.Event) -> BaseEventHandler:
+        action_or_state = self.dispatch(event)
+        if isinstance(action_or_state, BaseEventHandler):
+            return action_or_state
+        if self.handle_action(action_or_state):
+            if not self.engine.player.is_alive:
+                 return GameOverEventHandler(self.engine)
+            return MainGameEventHandler(self.engine)
+        return self
     
     def handle_action(self, action: Optional[Action]) -> bool:
         """处理从事件方法返回的动作。
@@ -88,13 +134,6 @@ class EventHandler:
         if self.engine.game_map.in_bounds(event.tile.x, event.tile.y):
            self.engine.mouse_location = event.tile.x, event.tile.y
     
-    def ev_quit(self, event: tcod.event.Quit) -> Optional[Action]:
-        """
-        处理退出事件
-        当用户点击窗口关闭按钮时触发
-        """
-        raise SystemExit()
-    
     def on_render(self, console: tcod.console.Console) -> None:
         self.engine.render(console)
     
@@ -104,26 +143,6 @@ class EventHandler:
     def ev_mousebuttondown(self, event: tcod.event.MouseButtonDown) -> Optional[Action]:
         # raise NotImplementedError()
         pass
-    
-    def dispatch(self, event: tcod.event.Event) -> Optional[Action]:
-        """
-        分发事件到对应的处理方法
-        
-        参数:
-            event: 事件对象
-        
-        返回:
-            对应的游戏动作，如果没有匹配的动作则返回 None
-        """
-        if isinstance(event, tcod.event.Quit):
-            return self.ev_quit(event)
-        elif isinstance(event, tcod.event.KeyDown):
-            return self.ev_keydown(event)
-        elif isinstance(event, tcod.event.MouseMotion):
-            return self.ev_mousemotion(event)
-        elif isinstance(event, tcod.event.MouseButtonDown):
-            return self.ev_mousebuttondown(event)
-        return None
 
 
 background_image = tcod.image.load("menu_background.png")[:, :, :3]
@@ -184,7 +203,7 @@ class MainGameEventHandler(EventHandler):
     def __init__(self, engine: "Engine"):
         self.engine = engine
 
-    def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[Action]:
+    def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
         """
         处理键盘按下事件
         将键盘输入转换为对应的游戏动作
@@ -212,24 +231,33 @@ class MainGameEventHandler(EventHandler):
         elif key == tcod.event.KeySym.ESCAPE:
             action = EscapeAction(player)
         elif key == tcod.event.KeySym.v:
-            self.engine.event_handler = HistoryViewer(self.engine)
+            return HistoryViewer(self.engine)
         elif key == tcod.event.KeySym.g:
             action = PickupAction(player)
         elif key == tcod.event.KeySym.i:
-            self.engine.event_handler = InventoryActivateHandler(self.engine)
+            return InventoryActivateHandler(self.engine)
         elif key == tcod.event.KeySym.d:
-            self.engine.event_handler = InventoryDropHandler(self.engine)
+            return InventoryDropHandler(self.engine)
         elif key == tcod.event.KeySym.SLASH:
-            self.engine.event_handler = LookHandler(self.engine)
+            return LookHandler(self.engine)
             
         # 返回处理后的动作，如果没有匹配的按键则返回 None
         return action
     
 class GameOverEventHandler(EventHandler):
 
+    def on_quit(self) -> None:
+        """Handle exiting out of a finished game."""
+        if os.path.exists("savegame.sav"):
+            os.remove("savegame.sav")  # Deletes the active save file.
+        raise exceptions.QuitWithoutSaving()  # Avoid saving a finished game.
+
+    def ev_quit(self, event: tcod.event.Quit) -> None:
+        self.on_quit()
+
     def ev_keydown(self, event: tcod.event.KeyDown) -> None:
         if event.sym == tcod.event.KeySym.ESCAPE:
-            raise SystemExit()
+            self.on_quit()
     
 CURSOR_Y_KEYS = {
     tcod.event.KeySym.UP: -1,
@@ -272,7 +300,7 @@ class HistoryViewer(EventHandler):
         )
         log_console.blit(console, 3, 3)
 
-    def ev_keydown(self, event: tcod.event.KeyDown) -> None:
+    def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
         # 花哨的条件移动，使其感觉正确
         if event.sym in CURSOR_Y_KEYS:
             adjust = CURSOR_Y_KEYS[event.sym]
@@ -290,19 +318,13 @@ class HistoryViewer(EventHandler):
         elif event.sym == tcod.event.KeySym.END:
             self.cursor = self.log_length - 1  # 直接移动到最后一条消息
         else:  # 任何其他键都会返回到主游戏状态
-            self.engine.event_handler = MainGameEventHandler(self.engine)
+            return MainGameEventHandler(self.engine)
+        
+        return None
 
 class AskUserEventHandler(EventHandler):
     """处理需要特殊输入的动作的用户输入。"""
-
-    def handle_action(self, action: Optional[Action]) -> bool:
-        """当执行了有效动作时返回到主事件处理器。"""
-        if super().handle_action(action):
-            self.engine.event_handler = MainGameEventHandler(self.engine)
-            return True
-        return False
-
-    def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[Action]:
+    def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
         """默认情况下，任何键都会退出此输入处理器。"""
         if event.sym in {  # 忽略修饰键
             tcod.event.KeySym.LSHIFT,
@@ -315,17 +337,16 @@ class AskUserEventHandler(EventHandler):
             return None
         return self.on_exit()
 
-    def ev_mousebuttondown(self, event: tcod.event.MouseButtonDown) -> Optional[Action]:
+    def ev_mousebuttondown(self, event: tcod.event.MouseButtonDown) -> Optional[ActionOrHandler]:
         """By default any mouse click exits this input handler."""
         return self.on_exit()
 
-    def on_exit(self) -> Optional[Action]:
+    def on_exit(self) -> Optional[ActionOrHandler]:
         """Called when the user is trying to exit or cancel an action.
 
         By default this returns to the main event handler.
         """
-        self.engine.event_handler = MainGameEventHandler(self.engine)
-        return None
+        return MainGameEventHandler(self.engine)
     
 class InventoryEventHandler(AskUserEventHandler):
     """此处理器让用户选择一个物品。
@@ -380,7 +401,7 @@ class InventoryEventHandler(AskUserEventHandler):
         else:
             console.print(x + 1, y + 1, "(Empty)")
 
-    def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[Action]:
+    def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
         player = self.engine.player
         key = event.sym
         index = key - tcod.event.KeySym.a
@@ -394,7 +415,7 @@ class InventoryEventHandler(AskUserEventHandler):
             return self.on_item_selected(selected_item)
         return super().ev_keydown(event)
 
-    def on_item_selected(self, item: "Item") -> Optional[Action]:
+    def on_item_selected(self, item: "Item") -> Optional[ActionOrHandler]:
         """Called when the user selects a valid item."""
         raise NotImplementedError()
     
@@ -403,7 +424,7 @@ class InventoryActivateHandler(InventoryEventHandler):
 
     TITLE = "Use Item"
 
-    def on_item_selected(self, item: "Item") -> Optional[Action]:
+    def on_item_selected(self, item: "Item") -> Optional[ActionOrHandler]:
         """Return the action for the selected item."""
         return item.consumable.get_action(self.engine.player)
     
@@ -412,7 +433,7 @@ class InventoryDropHandler(InventoryEventHandler):
 
     TITLE = "Drop Item"
 
-    def on_item_selected(self, item: "Item") -> Optional[Action]:
+    def on_item_selected(self, item: "Item") -> Optional[ActionOrHandler]:
         """Drop this item."""
         return actions.DropItem(self.engine.player, item)
     
@@ -432,7 +453,7 @@ class SelectIndexHandler(AskUserEventHandler):
         console.rgb["bg"][x, y] = color.white
         console.rgb["fg"][x, y] = color.black
 
-    def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[Action]:
+    def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
         """检查按键是否移动或确认按键"""
         key = event.sym
         if key in MOVE_KEYS:
@@ -458,7 +479,7 @@ class SelectIndexHandler(AskUserEventHandler):
         
         return super().ev_keydown(event)
     
-    def ev_mousebuttondown(self, event: tcod.event.MouseButtonDown) -> Optional[Action]:
+    def ev_mousebuttondown(self, event: tcod.event.MouseButtonDown) -> Optional[ActionOrHandler]:
         """鼠标点击事件"""
         if self.engine.game_map.in_bounds(*event.tile):
             if event.button == 1:
@@ -467,16 +488,16 @@ class SelectIndexHandler(AskUserEventHandler):
         return super().ev_mousebuttondown(event)
 
 
-    def on_index_selected(self, x: int, y: int) -> Optional[Action]:
+    def on_index_selected(self, x: int, y: int) -> Optional[ActionOrHandler]:
         """当用户选择一个位置时调用"""
         raise NotImplementedError()
     
 # 查看位置
 class LookHandler(SelectIndexHandler):
     """处理查看位置的请求。"""
-    def on_index_selected(self, x: int, y: int) -> None:
+    def on_index_selected(self, x: int, y: int) -> Optional[ActionOrHandler]:
         """Return to main handler."""
-        self.engine.event_handler = MainGameEventHandler(self.engine)
+        return MainGameEventHandler(self.engine)
 
 # 单次远程选择攻击
 class SingleRangedAttackHandler(SelectIndexHandler):
@@ -513,3 +534,30 @@ class AreaRangedAttackHandler(SelectIndexHandler):
 
     def on_index_selected(self, x: int, y: int) -> Optional[Action]:
         return self.callback((x, y))
+
+
+class PopupMessage(BaseEventHandler):
+    """Display a popup text window."""
+
+    def __init__(self, parent_handler: BaseEventHandler, text: str):
+        self.parent = parent_handler
+        self.text = text
+
+    def on_render(self, console: tcod.Console) -> None:
+        """Render the parent and dim the result, then print the message on top."""
+        self.parent.on_render(console)
+        console.tiles_rgb["fg"] //= 8
+        console.tiles_rgb["bg"] //= 8
+
+        console.print(
+            console.width // 2,
+            console.height // 2,
+            self.text,
+            fg=color.white,
+            bg=color.black,
+            alignment=tcod.CENTER,
+        )
+
+    def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[BaseEventHandler]:
+        """Any key returns to the parent handler."""
+        return self.parent

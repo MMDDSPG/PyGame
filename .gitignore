@@ -22,3 +22,6 @@ ENV/
 
 # 其它
 *.log
+
+# Saved games
+*.sav
