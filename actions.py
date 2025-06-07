@@ -85,6 +85,19 @@ class WaitAction(Action):
     def perform(self) -> None:
         pass
 
+class TakeStairsAction(Action):
+    def perform(self) -> None:
+        """
+        如果楼梯存在，则移动到楼梯。
+        """
+        if (self.entity.x, self.entity.y) == self.engine.game_map.downstairs_location:
+            self.engine.game_world.generate_floor()
+            self.engine.message_log.add_message(
+                "You descend the staircase.", color.descend
+            )
+        else:
+            raise exceptions.Impossible("There are no stairs here.")
+
 # 移动或攻击的基类
 class ActionWithDirection(Action):
     def __init__(self, entity: Actor, dx: int, dy: int):

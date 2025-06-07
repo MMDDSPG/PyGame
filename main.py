@@ -37,7 +37,7 @@ def main():
         columns=screen_width,
         rows=screen_height,
         tileset=tileset,
-        title="Yet Another Roguelike Tutorial",
+        title="Hello World",
         vsync=True,
     ) as context:
         # 创建主控制台对象

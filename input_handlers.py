@@ -220,7 +220,12 @@ class MainGameEventHandler(EventHandler):
         # 获取按下的键
         key = event.sym
 
+        modifier = event.mod
+
         player = self.engine.player
+
+        if key == tcod.event.K_PERIOD and modifier & (tcod.event.KMOD_LSHIFT | tcod.event.KMOD_RSHIFT):
+            return actions.TakeStairsAction(player)
 
         if key in MOVE_KEYS:
             dx, dy = MOVE_KEYS[key]

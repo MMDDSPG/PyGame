@@ -50,3 +50,11 @@ wall = new_tile(
     dark=(ord(" "), (255, 255, 255), (0, 0, 100)),
     light=(ord(" "), (255, 255, 255), (130, 110, 50)),  
 )
+
+# 定义楼梯地形
+down_stairs = new_tile(
+    walkable=True,
+    transparent=True,
+    dark=(ord(">"), (0, 0, 100), (50, 50, 150)),
+    light=(ord(">"), (255, 255, 255), (200, 180, 50)),
+)
