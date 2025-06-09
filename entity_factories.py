@@ -13,7 +13,7 @@ player = Actor(
     ai_cls=HostileEnemy,
     equipment=Equipment(),
     fighter=Fighter(hp=300, base_defense=20, base_power=50),
-    inventory=Inventory(capacity=7),
+    inventory=Inventory(capacity=10),
     level=Level(level_up_base=200),
 )
 
