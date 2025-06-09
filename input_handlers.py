@@ -682,11 +682,11 @@ class PopupMessage(BaseEventHandler):
         self.needQuit = needQuit
         self.bgStr = bgStr
 
-    def on_render(self, console: tcod.Console) -> None:
+    def on_render(self, console: tcod.console.Console) -> None:
         """Render the parent and dim the result, then print the message on top."""
         self.parent.on_render(console)
-        console.tiles_rgb["fg"] //= 8
-        console.tiles_rgb["bg"] //= 8
+        console.rgb["fg"] //= 8
+        console.rgb["bg"] //= 8
 
         if (self.bgStr):
             background_image = load_and_resize_image(self.bgStr, 100, 100)
