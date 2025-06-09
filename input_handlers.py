@@ -109,6 +109,8 @@ class EventHandler(BaseEventHandler):
         if self.handle_action(action_or_state):
             if not self.engine.player.is_alive:
                 return GameOverEventHandler(self.engine)
+            elif self.engine.game_world.current_floor > 2:
+                return PopupMessage(GameOverEventHandler(self.engine), "You Win!")
             elif self.engine.player.level.requires_level_up:
                 return LevelUpEventHandler(self.engine)
             return MainGameEventHandler(self.engine)
