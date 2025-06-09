@@ -141,10 +141,13 @@ def place_entities(room: RectangularRoom, dungeon: GameMap, floor_number: int,) 
     )
 
     for entity in monsters + items:
-        x = random.randint(room.x1 + 1, room.x2 - 1)
-        y = random.randint(room.y1 + 1, room.y2 - 1)
-        if not any(entity.x == x and entity.y == y for entity in dungeon.entities):
-           entity.spawn(dungeon, x, y)
+        isPlaced = False
+        while not isPlaced:
+            x = random.randint(room.x1 + 1, room.x2 - 1)
+            y = random.randint(room.y1 + 1, room.y2 - 1)
+            if not any(entity.x == x and entity.y == y for entity in dungeon.entities):
+                entity.spawn(dungeon, x, y)
+                isPlaced = True
 
 def tunnel_between(
     start: Tuple[int, int], end: Tuple[int, int]
@@ -181,20 +184,23 @@ def generate_dungeon(
     rooms: List[RectangularRoom] = []   
 
     center_of_last_room = (0, 0)
-
+    new_room = None
     for r in range(max_rooms):
-        room_width = random.randint(room_min_size, room_max_size)
-        room_height = random.randint(room_min_size, room_max_size)
+        isPlaced = False
+        while not isPlaced:
+            room_width = random.randint(room_min_size, room_max_size)
+            room_height = random.randint(room_min_size, room_max_size)
+            x = random.randint(0, dungeon.width - room_width - 1)
+            y = random.randint(0, dungeon.height - room_height - 1)
 
-        x = random.randint(0, dungeon.width - room_width - 1)
-        y = random.randint(0, dungeon.height - room_height - 1)
+            new_room = RectangularRoom(x, y, room_width, room_height)
 
-        new_room = RectangularRoom(x, y, room_width, room_height)
-
-        # 遍历其他房间，检查是否与当前房间重叠
-        if any(new_room.intersects(other_room) for other_room in rooms):
-            continue  # 有重叠则跳过，尝试下一个房间
-        # 没有重叠则房间有效
+            # 遍历其他房间，检查是否与当前房间重叠
+            if any(new_room.intersects(other_room) for other_room in rooms):
+                continue  # 有重叠则跳过，尝试下一个房间
+            else:
+                isPlaced = True
+            # 没有重叠则房间有效
 
         # 挖出这个房间的内部区域
         dungeon.tiles[new_room.inner] = tile_types.floor
