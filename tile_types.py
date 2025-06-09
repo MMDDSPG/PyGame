@@ -14,8 +14,8 @@ graphic_dt = np.dtype(
 # 定义地形结构体类型 tile_dt，用于静态描述每种地形的属性。
 tile_dt = np.dtype(
     [
-        ("walkable", np.bool),      # 是否可行走
-        ("transparent", np.bool),   # 是否透明（影响视野/FOV）
+        ("walkable", np.bool_),      # 是否可行走
+        ("transparent", np.bool_),   # 是否透明（影响视野/FOV）
         ("dark", graphic_dt),       # 不在视野内时的图形显示
         ("light", graphic_dt),      # 在视野内时的图形显示
     ]

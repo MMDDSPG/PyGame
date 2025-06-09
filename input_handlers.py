@@ -126,7 +126,7 @@ class EventHandler(BaseEventHandler):
                 return GameOverEventHandler(self.engine)
             elif self.engine.game_world.current_floor > 7:
                 if not is_finish_Easter_eggs(self.engine):
-                    return PopupMessage(parent_handler=GameOverEventHandler(self.engine), text="", needQuit= True, bgStr="birthday.png")
+                    return PopupMessage(parent_handler=GameOverEventHandler(self.engine), text="", needQuit= True, bgStr="assets/birthday.png")
                 else:
                     return PopupMessage(parent_handler=GameOverEventHandler(self.engine), text="You win!", needQuit= True)
             elif self.engine.player.level.requires_level_up:
@@ -165,56 +165,6 @@ class EventHandler(BaseEventHandler):
     def ev_mousebuttondown(self, event: tcod.event.MouseButtonDown) -> Optional[Action]:
         # raise NotImplementedError()
         pass
-
-
-background_image = tcod.image.load("menu_background.png")[:, :, :3]
-class MainMenu(EventHandler):
-    """Handle the main menu rendering and input."""
-
-    def on_render(self, console: tcod.console.Console) -> None:
-        """Render the main menu on a background image."""
-        console.draw_semigraphics(background_image, 0, 0)
-
-        console.print(
-            console.width // 2,
-            console.height // 2 - 4,
-            "TOMBS OF THE ANCIENT KINGS",
-            fg=color.menu_title,
-            alignment=tcod.constants.CENTER,
-        )
-        console.print(
-            console.width // 2,
-            console.height - 2,
-            "By (Your name here)",
-            fg=color.menu_title,
-            alignment=tcod.constants.CENTER,
-        )
-
-        menu_width = 24
-        for i, text in enumerate(
-            ["[N] Play a new game", "[C] Continue last game", "[Q] Quit"]
-        ):
-            console.print(
-                console.width // 2,
-                console.height // 2 - 2 + i,
-                text.ljust(menu_width),
-                fg=color.menu_text,
-                bg=color.black,
-                alignment=tcod.constants.CENTER,
-            )
-
-    def ev_keydown(
-        self, event: tcod.event.KeyDown
-    ) -> None:
-        if event.sym in (tcod.event.KeySym.q, tcod.event.KeySym.ESCAPE):
-            raise SystemExit()
-        elif event.sym == tcod.event.KeySym.c:
-            # TODO: Load the game here
-            pass
-        elif event.sym == tcod.event.KeySym.n:
-            self.engine.event_handler = MainGameEventHandler(self.engine)
-
-        return None
 
 class MainGameEventHandler(EventHandler):
     """

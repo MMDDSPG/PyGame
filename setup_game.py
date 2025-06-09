@@ -18,7 +18,7 @@ import traceback
 
 
 # Load the background image and remove the alpha channel.
-background_image = tcod.image.load("menu_background.png")[:, :, :3]
+background_image = tcod.image.load("assets/menu_background.png")[:, :, :3]
 
 
 def new_game() -> Engine:
