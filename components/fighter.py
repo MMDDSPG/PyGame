@@ -17,11 +17,11 @@ class Fighter(BaseComponent):
     # hp: 生命值
     # defense: 防御力
     # power: 攻击力
-    def __init__(self, hp: int, defense: int, power: int):
+    def __init__(self, hp: int, base_defense: int, base_power: int):
         self.max_hp = hp
         self._hp = hp
-        self.defense = defense
-        self.power = power
+        self.base_defense = base_defense
+        self.base_power = base_power
 
     # 获取当前生命值
     @property
@@ -34,6 +34,28 @@ class Fighter(BaseComponent):
         self._hp = max(0, min(value, self.max_hp))
         if self._hp == 0 and self.parent.ai:
             self.die()
+
+    @property
+    def defense(self) -> int:
+        return self.base_defense + self.defense_bonus
+
+    @property
+    def power(self) -> int:
+        return self.base_power + self.power_bonus
+
+    @property
+    def defense_bonus(self) -> int:
+        if self.parent.equipment:
+            return self.parent.equipment.defense_bonus
+        else:
+            return 0
+
+    @property
+    def power_bonus(self) -> int:
+        if self.parent.equipment:
+            return self.parent.equipment.power_bonus
+        else:
+            return 0
 
     def die(self) -> None:
         if self.engine.player is self.parent:

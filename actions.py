@@ -71,7 +71,8 @@ class ItemAction(Action):
 
     def perform(self) -> None:
         """调用物品的能力，此动作将提供上下文。"""
-        self.item.consumable.activate(self)
+        if self.item.consumable:
+            self.item.consumable.activate(self)
 
 class EscapeAction(Action):
     def perform(self) -> None:
@@ -79,7 +80,20 @@ class EscapeAction(Action):
 
 class DropItem(ItemAction):
     def perform(self) -> None:
+        # 如果物品被装备，则卸下
+        if self.entity.equipment.item_is_equipped(self.item):
+            self.entity.equipment.toggle_equip(self.item)
+
         self.entity.inventory.drop(self.item)
+
+class EquipAction(Action):
+   def __init__(self, entity: Actor, item: Item):
+       super().__init__(entity)
+
+       self.item = item
+
+   def perform(self) -> None:
+       self.entity.equipment.toggle_equip(self.item)
 
 class WaitAction(Action):
     def perform(self) -> None:

@@ -369,7 +369,7 @@ class CharacterScreenEventHandler(AskUserEventHandler):
 
         y = 0
 
-        width = len(self.TITLE) + 4
+        width = len(self.TITLE) + 8
 
         console.draw_frame(
             x=x,
@@ -395,10 +395,10 @@ class CharacterScreenEventHandler(AskUserEventHandler):
         )
 
         console.print(
-            x=x + 1, y=y + 4, string=f"Attack: {self.engine.player.fighter.power}"
+            x=x + 1, y=y + 4, string=f"Attack: {self.engine.player.fighter.power} (Equipped: {self.engine.player.equipment.power_bonus})"
         )
         console.print(
-            x=x + 1, y=y + 5, string=f"Defense: {self.engine.player.fighter.defense}"
+            x=x + 1, y=y + 5, string=f"Defense: {self.engine.player.fighter.defense} (Equipped: {self.engine.player.equipment.defense_bonus})"
         )
     
 # 升级事件处理
@@ -505,8 +505,8 @@ class InventoryEventHandler(AskUserEventHandler):
             (len(item.name) for item in self.engine.player.inventory.items),
             default=0
         )
-        # 物品名称前需要加上 "(a) " 这样的前缀，所以加4
-        width = max(title_width, max_item_width + 4) + 4
+        # 物品名称前需要加上 "(a) " 这样的前缀，所以加4 (E) 再加4
+        width = max(title_width, max_item_width + 4) + 4 + 4
 
         console.draw_frame(x=x,y=y,width=width,height=height)
         console.print(
@@ -519,7 +519,12 @@ class InventoryEventHandler(AskUserEventHandler):
         if number_of_items_in_inventory > 0:
             for i, item in enumerate(self.engine.player.inventory.items):
                 item_key = chr(ord("a") + i)
-                console.print(x + 1, y + i + 1, f"({item_key}) {item.name}")
+                is_equipped = self.engine.player.equipment.item_is_equipped(item)
+                item_string = f"({item_key}) {item.name}"
+                if is_equipped:
+                    item_string = f"{item_string} (E)"
+                console.print(x + 1, y + i + 1, item_string)
+
         else:
             console.print(x + 1, y + 1, "(Empty)")
 
@@ -548,7 +553,12 @@ class InventoryActivateHandler(InventoryEventHandler):
 
     def on_item_selected(self, item: "Item") -> Optional[ActionOrHandler]:
         """Return the action for the selected item."""
-        return item.consumable.get_action(self.engine.player)
+        if item.consumable:
+            return item.consumable.get_action(self.engine.player)
+        elif item.equippable:
+            return item.equippable.get_action(self.engine.player)
+        else:
+            return None
     
 class InventoryDropHandler(InventoryEventHandler):
     """处理丢弃物品栏中的物品。"""
