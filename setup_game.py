@@ -28,10 +28,7 @@ def new_game() -> Engine:
 
     room_max_size = 10
     room_min_size = 6
-    max_rooms = 30
-
-    max_monsters_per_room = 2
-    max_items_per_room = 2
+    max_rooms = 5
 
     player = copy.deepcopy(entity_factories.player)
 
@@ -44,10 +41,8 @@ def new_game() -> Engine:
         room_max_size=room_max_size,
         map_width=map_width,
         map_height=map_height,
-        max_monsters_per_room=max_monsters_per_room,
-        max_items_per_room=max_items_per_room,
     )
-    
+
     engine.game_world.generate_floor()
     engine.update_fov()
 
@@ -81,7 +76,7 @@ class MainMenu(input_handlers.BaseEventHandler):
         console.print(
             console.width // 2,
             console.height - 2,
-            "By (Your name here)",
+            "By MMDDSPG",
             fg=color.menu_title,
             alignment=tcod.CENTER,
         )
@@ -117,3 +112,6 @@ class MainMenu(input_handlers.BaseEventHandler):
             return input_handlers.MainGameEventHandler(new_game())
 
         return None
+    
+    def ev_mousemotion(self, event: tcod.event.MouseMotion) -> None:
+        pass
