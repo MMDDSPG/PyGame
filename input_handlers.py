@@ -4,6 +4,8 @@ import tcod.event
 import tcod.console
 import actions
 import os
+from PIL import Image
+import numpy as np
 
 from actions import (
     Action,
@@ -109,7 +111,7 @@ class EventHandler(BaseEventHandler):
         if self.handle_action(action_or_state):
             if not self.engine.player.is_alive:
                 return GameOverEventHandler(self.engine)
-            elif self.engine.game_world.current_floor > 1:
+            elif self.engine.game_world.current_floor > 0:
                 return PopupMessage(parent_handler=GameOverEventHandler(self.engine), text="", needQuit= True, bgStr="birthday.png")
             elif self.engine.player.level.requires_level_up:
                 return LevelUpEventHandler(self.engine)
@@ -665,6 +667,12 @@ class AreaRangedAttackHandler(SelectIndexHandler):
         return self.callback((x, y))
 
 
+def load_and_resize_image(path, width, height):
+    img = Image.open(path).convert("RGB")
+    img = img.resize((width, height), Image.LANCZOS)
+    arr = np.array(img)
+    return arr
+
 class PopupMessage(BaseEventHandler):
     """Display a popup text window."""
 
@@ -681,8 +689,8 @@ class PopupMessage(BaseEventHandler):
         console.tiles_rgb["bg"] //= 8
 
         if (self.bgStr):
-            background_image = tcod.image.load(self.bgStr)[:, :, :3]
-            console.draw_semigraphics(background_image, 0, 0)
+            background_image = load_and_resize_image(self.bgStr, 100, 100)
+            console.draw_semigraphics(background_image, 15, 0)
 
         console.print(
             console.width // 2,
