@@ -40,6 +40,16 @@ enemy_chances: Dict[int, List[Tuple["Entity", int]]] = {
    7: [(entity_factories.troll, 60)],
 }
 
+egg_entity_by_floor: Dict[int, "Entity"] = {
+    1: entity_factories.egg_C,
+    2: entity_factories.egg_L,
+    3: entity_factories.egg_Y,
+    4: entity_factories.egg_S,
+    5: entity_factories.egg_R,
+    6: entity_factories.egg_K,
+    7: entity_factories.egg_L,
+}
+
 def get_max_value_for_floor(
     weighted_chances_by_floor: List[Tuple[int, int]], floor: int
 ) -> int:
@@ -206,5 +216,17 @@ def generate_dungeon(
 
         # 最后，把新房间加入房间列表
         rooms.append(new_room)
+
+    # 随机选择一个房间放置彩蛋
+    if engine.game_world.current_floor in egg_entity_by_floor:
+        egg_entity = egg_entity_by_floor[engine.game_world.current_floor]
+        room = random.choice(rooms)
+        isPlaced = False
+        while not isPlaced:
+            x = random.randint(room.x1 + 1, room.x2 - 1)
+            y = random.randint(room.y1 + 1, room.y2 - 1)
+            if not any(entity.x == x and entity.y == y for entity in dungeon.entities):
+                egg_entity.spawn(dungeon, x, y)
+                isPlaced = True
 
     return dungeon

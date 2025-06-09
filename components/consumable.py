@@ -52,6 +52,66 @@ class HealingConsumable(Consumable):
         else:
             raise Impossible(f"Your health is already full.")
         
+# 力量药水
+class PowerIncreaseConsumable(Consumable):
+    def __init__(self, amount: int):
+        self.amount = amount
+
+    def activate(self, action: actions.ItemAction) -> None:
+        consumer = action.entity
+        consumer.fighter.base_power += self.amount
+        self.engine.message_log.add_message("You feel stronger!")
+
+# 防御药水
+class DefenseIncreaseConsumable(Consumable):
+    def __init__(self, amount: int):
+        self.amount = amount
+
+    def activate(self, action: actions.ItemAction) -> None:
+        consumer = action.entity
+        consumer.fighter.base_defense += self.amount
+        self.engine.message_log.add_message("Your defense improves")
+
+# 生命药水
+class HealthIncreaseConsumable(Consumable):
+    def __init__(self, amount: int):
+        self.amount = amount
+
+    def activate(self, action: actions.ItemAction) -> None:
+        consumer = action.entity
+        consumer.fighter.max_hp += self.amount
+        consumer.fighter.hp += self.amount
+
+        self.engine.message_log.add_message("Your health improves!")
+
+# 力量翻倍药水
+class PowerDoubleConsumable(Consumable):
+    def __init__(self, amount: int):
+        self.amount = amount
+
+    def activate(self, action: actions.ItemAction) -> None:
+        consumer = action.entity
+        consumer.fighter.base_power *= self.amount
+
+# 防御翻倍药水
+class DefenseDoubleConsumable(Consumable):
+    def __init__(self, amount: int):
+        self.amount = amount
+
+    def activate(self, action: actions.ItemAction) -> None:
+        consumer = action.entity
+        consumer.fighter.base_defense *= self.amount
+
+# 生命翻倍药水
+class HealthDoubleConsumable(Consumable):
+    def __init__(self, amount: int):
+        self.amount = amount
+
+    def activate(self, action: actions.ItemAction) -> None:
+        consumer = action.entity
+        consumer.fighter.max_hp *= self.amount
+        consumer.fighter.hp *= self.amount
+
 # 伤害物品
 class LightningDamageConsumable(Consumable):
     def __init__(self, damage: int, maximum_range: int):

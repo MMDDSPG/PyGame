@@ -13,7 +13,7 @@ player = Actor(
     ai_cls=HostileEnemy,
     equipment=Equipment(),
     fighter=Fighter(hp=300, base_defense=20, base_power=50),
-    inventory=Inventory(capacity=26),
+    inventory=Inventory(capacity=7),
     level=Level(level_up_base=200),
 )
 
@@ -42,7 +42,7 @@ troll = Actor(
 health_potion = Item(
     char="!",
     color=(127, 0, 255),
-    name="Health Potion",
+    name="Health Potion (H + 4)",
     consumable=consumable.HealingConsumable(amount=4),
 )
 
@@ -70,26 +70,69 @@ fireball_scroll = Item(
 dagger = Item(
     char="/",
     color=(0, 191, 255),
-    name="Dagger",
+    name=f"Dagger (P + {equippable.Dagger().power_bonus})",
     equippable=equippable.Dagger()
 )
 
 sword = Item(
     char="/",
     color=(0, 191, 255),
-    name="Sword",
-    equippable=equippable.Sword())
+    name=f"Sword (P + {equippable.Sword().power_bonus})",
+    equippable=equippable.Sword()
+)
 
 leather_armor = Item(
    char="[",
    color=(139, 69, 19),
-   name="Leather Armor",
+   name=f"Leather Armor (D + {equippable.LeatherArmor().defense_bonus})",
    equippable=equippable.LeatherArmor(),
 )
 
 chain_mail = Item(
    char="[",
    color=(139, 69, 19),
-   name="Chain Mail",
+   name=f"Chain Mail (D + {equippable.ChainMail().defense_bonus})",
    equippable=equippable.ChainMail()
+)
+
+egg_C = Item(
+    char="?",
+    color=(255, 182, 193),
+    name="C",
+    consumable=consumable.HealthIncreaseConsumable(amount=10),
+)
+
+egg_L = Item(
+    char="?",
+    color=(255, 182, 193),
+    name="L",
+    consumable=consumable.PowerIncreaseConsumable(amount=10),
+)
+
+egg_Y = Item(
+    char="?",
+    color=(255, 182, 193),
+    name="Y",
+    consumable=consumable.DefenseIncreaseConsumable(amount=10),
+)
+
+egg_S = Item(
+    char="?",
+    color=(255, 182, 193),
+    name="S",
+    consumable=consumable.HealthDoubleConsumable(amount=2),
+)
+
+egg_R = Item(
+    char="?",
+    color=(255, 182, 193),
+    name="R",
+    consumable=consumable.PowerDoubleConsumable(amount=2),
+)
+
+egg_K = Item(
+    char="?",
+    color=(255, 182, 193),
+    name="K",
+    consumable=consumable.DefenseDoubleConsumable(amount=2),
 )

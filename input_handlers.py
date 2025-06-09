@@ -99,6 +99,19 @@ class BaseEventHandler:
         elif isinstance(event, tcod.event.MouseButtonDown):
             return self.ev_mousebuttondown(event)
         return None
+    
+def is_finish_Easter_eggs(engine: "Engine") -> bool:
+    # 检查是否收集了所有彩蛋，且顺序正确
+    target = ["egg_C", "egg_L", "egg_Y", "egg_S", "egg_R", "egg_K", "egg_L"]
+    items = engine.player.inventory.items
+    # 先判断数量
+    if len(items) != len(target):
+        return False
+    # 依次比对名字
+    for item, name in zip(items, target):
+        if getattr(item, "name", None) != name:
+            return False
+    return True
 
 class EventHandler(BaseEventHandler):
     def __init__(self, engine: "Engine"):
@@ -111,8 +124,11 @@ class EventHandler(BaseEventHandler):
         if self.handle_action(action_or_state):
             if not self.engine.player.is_alive:
                 return GameOverEventHandler(self.engine)
-            elif self.engine.game_world.current_floor > 0:
-                return PopupMessage(parent_handler=GameOverEventHandler(self.engine), text="", needQuit= True, bgStr="birthday.png")
+            elif self.engine.game_world.current_floor > 7:
+                if not is_finish_Easter_eggs(self.engine):
+                    return PopupMessage(parent_handler=GameOverEventHandler(self.engine), text="", needQuit= True, bgStr="birthday.png")
+                else:
+                    return PopupMessage(parent_handler=GameOverEventHandler(self.engine), text="You win!", needQuit= True)
             elif self.engine.player.level.requires_level_up:
                 return LevelUpEventHandler(self.engine)
             return MainGameEventHandler(self.engine)
