@@ -3,7 +3,6 @@ from tcod.console import Console
 
 from entity import Actor, Item
 import tile_types
-from input_handlers import PopupMessage
 
 from typing import Iterable, Iterator, Optional, TYPE_CHECKING
 

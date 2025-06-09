@@ -109,8 +109,8 @@ class EventHandler(BaseEventHandler):
         if self.handle_action(action_or_state):
             if not self.engine.player.is_alive:
                 return GameOverEventHandler(self.engine)
-            elif self.engine.game_world.current_floor > 2:
-                return PopupMessage(GameOverEventHandler(self.engine), "You Win!")
+            elif self.engine.game_world.current_floor > 1:
+                return PopupMessage(parent_handler=GameOverEventHandler(self.engine), text="", needQuit= True, bgStr="birthday.png")
             elif self.engine.player.level.requires_level_up:
                 return LevelUpEventHandler(self.engine)
             return MainGameEventHandler(self.engine)
@@ -668,15 +668,21 @@ class AreaRangedAttackHandler(SelectIndexHandler):
 class PopupMessage(BaseEventHandler):
     """Display a popup text window."""
 
-    def __init__(self, parent_handler: BaseEventHandler, text: str):
+    def __init__(self, *, parent_handler: BaseEventHandler, text: str, needQuit: bool = False, bgStr: str = ""):
         self.parent = parent_handler
         self.text = text
+        self.needQuit = needQuit
+        self.bgStr = bgStr
 
     def on_render(self, console: tcod.Console) -> None:
         """Render the parent and dim the result, then print the message on top."""
         self.parent.on_render(console)
         console.tiles_rgb["fg"] //= 8
         console.tiles_rgb["bg"] //= 8
+
+        if (self.bgStr):
+            background_image = tcod.image.load(self.bgStr)[:, :, :3]
+            console.draw_semigraphics(background_image, 0, 0)
 
         console.print(
             console.width // 2,
@@ -689,4 +695,6 @@ class PopupMessage(BaseEventHandler):
 
     def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[BaseEventHandler]:
         """Any key returns to the parent handler."""
+        if (self.needQuit):
+            raise SystemExit()
         return self.parent
