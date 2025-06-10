@@ -98,41 +98,41 @@ chain_mail = Item(
 egg_C = Item(
     char="?",
     color=(255, 182, 193),
-    name="C",
+    name="Cai",
     consumable=consumable.HealthIncreaseConsumable(amount=10),
 )
 
 egg_L = Item(
     char="?",
     color=(255, 182, 193),
-    name="L",
+    name="Le",
     consumable=consumable.PowerIncreaseConsumable(amount=10),
 )
 
 egg_Y = Item(
     char="?",
     color=(255, 182, 193),
-    name="Y",
+    name="Yi",
     consumable=consumable.DefenseIncreaseConsumable(amount=10),
 )
 
 egg_S = Item(
     char="?",
     color=(255, 182, 193),
-    name="S",
+    name="Sheng",
     consumable=consumable.HealthDoubleConsumable(amount=2),
 )
 
 egg_R = Item(
     char="?",
     color=(255, 182, 193),
-    name="R",
+    name="Ri",
     consumable=consumable.PowerDoubleConsumable(amount=2),
 )
 
 egg_K = Item(
     char="?",
     color=(255, 182, 193),
-    name="K",
+    name="Kuai",
     consumable=consumable.DefenseDoubleConsumable(amount=2),
 )
