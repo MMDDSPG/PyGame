@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 from tcod.console import Console
 from tcod.map import compute_fov
 
+import game_config
 import render_functions
 from message_log import MessageLog
 
@@ -40,7 +41,7 @@ class Engine:
         self.game_map.visible[:] = compute_fov(
             self.game_map.tiles["transparent"],
             (self.player.x, self.player.y),
-            radius=8,
+            radius=game_config.fov_radius,
         )
         # 如果一个方块在 "visible" 数组中，则它应该被添加到 "explored" 数组中。
         self.game_map.explored |= self.game_map.visible
@@ -48,23 +49,38 @@ class Engine:
     def render(self, console: Console) -> None:
         self.game_map.render(console)
 
-        self.message_log.render(console=console, x=21, y=45, width=40, height=5)
+        render_functions.render_margin(
+            console=console, 
+            x=0, 
+            y=game_config.split_line_y,
+        )
+
+        self.message_log.render(
+            console=console, 
+            x=game_config.bar_width + game_config.x_margin, 
+            y=game_config.split_line_y + game_config.mouse_description + 1, 
+            width=game_config.screen_width - game_config.bar_width - game_config.x_margin, 
+            height=game_config.log_height - game_config.mouse_description
+        )
 
         render_functions.render_bar(
             console=console,
             current_value=self.player.fighter.hp,
             maximum_value=self.player.fighter.max_hp,
-            total_width=20,
+            total_width= game_config.bar_width,
         )
 
         render_functions.render_dungeon_level(
             console=console,
             dungeon_level=self.game_world.current_floor,
-            location=(0, 47),
+            location=(0, game_config.split_line_y + game_config.mouse_description + 2),
         )
 
         render_functions.render_names_at_mouse_location(
-            console=console, x=21, y=44, engine=self
+            console=console, 
+            x=game_config.bar_width + game_config.x_margin, 
+            y=game_config.split_line_y + game_config.mouse_description, 
+            engine=self
         )
 
     def save_as(self, filename: str) -> None:

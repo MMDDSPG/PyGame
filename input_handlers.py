@@ -4,8 +4,6 @@ import tcod.event
 import tcod.console
 import actions
 import os
-from PIL import Image
-import numpy as np
 
 from actions import (
     Action,
@@ -16,6 +14,8 @@ from actions import (
 )
 import color
 import exceptions
+import game_config
+from loadImage import load_and_resize_image
 
 if TYPE_CHECKING:
     from engine import Engine
@@ -633,12 +633,6 @@ class AreaRangedAttackHandler(SelectIndexHandler):
         return self.callback((x, y))
 
 
-def load_and_resize_image(path, width, height):
-    img = Image.open(path).convert("RGB")
-    img = img.resize((width, height), Image.LANCZOS)
-    arr = np.array(img)
-    return arr
-
 class PopupMessage(BaseEventHandler):
     """Display a popup text window."""
 
@@ -655,8 +649,8 @@ class PopupMessage(BaseEventHandler):
         console.rgb["bg"] //= 8
 
         if (self.bgStr):
-            background_image = load_and_resize_image(self.bgStr, 100, 100)
-            console.draw_semigraphics(background_image, 15, 0)
+            background_image = load_and_resize_image(self.bgStr, game_config.screen_width * 2, game_config.screen_height * 2)
+            console.draw_semigraphics(background_image, 0, 0)
 
         console.print(
             console.width // 2,

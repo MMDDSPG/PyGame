@@ -16,19 +16,20 @@ import lzma
 import pickle
 import traceback
 
+import game_config
+from loadImage import load_and_resize_image
+
 
 # Load the background image and remove the alpha channel.
-background_image = tcod.image.load("assets/menu_background.png")[:, :, :3]
+# background_image = tcod.image.load("assets/menu_background.png")[:, :, :3]
 
 
 def new_game() -> Engine:
     """Return a brand new game session as an Engine instance."""
-    map_width = 80
-    map_height = 43
+    map_width = game_config.screen_width
+    map_height = game_config.screen_height - game_config.log_height - game_config.mouse_description
 
-    room_max_size = 10
-    room_min_size = 6
-    max_rooms = 2
+    
 
     player = copy.deepcopy(entity_factories.player)
 
@@ -36,9 +37,9 @@ def new_game() -> Engine:
 
     engine.game_world = GameWorld(
         engine=engine,
-        max_rooms=max_rooms,
-        room_min_size=room_min_size,
-        room_max_size=room_max_size,
+        max_rooms=game_config.max_rooms,
+        room_min_size=game_config.room_min_size,
+        room_max_size=game_config.room_max_size,
         map_width=map_width,
         map_height=map_height,
     )
@@ -78,11 +79,12 @@ class MainMenu(input_handlers.BaseEventHandler):
 
     def on_render(self, console: tcod.console.Console) -> None:
         """Render the main menu on a background image."""
+        background_image = load_and_resize_image("assets/menu_background.png", game_config.screen_width * 2, game_config.screen_height * 2)
         console.draw_semigraphics(background_image, 0, 0)
 
         console.print(
-            console.width // 2,
-            console.height // 2 - 4,
+            console.width // 4,
+            console.height // 2 - 12,
             "TOMBS OF THE ANCIENT KINGS",
             fg=color.menu_title,
             alignment=tcod.CENTER,
@@ -95,14 +97,13 @@ class MainMenu(input_handlers.BaseEventHandler):
             alignment=tcod.CENTER,
         )
 
-        menu_width = 24
         for i, text in enumerate(
             ["[N] Play a new game", "[C] Continue last game", "[Q] Quit"]
         ):
             console.print(
-                console.width // 2,
-                console.height // 2 - 2 + i,
-                text.ljust(menu_width),
+                console.width // 4,
+                console.height // 2 - 4 + i * 2,
+                text.ljust(game_config.menu_width),
                 fg=color.menu_text,
                 bg=color.black,
                 alignment=tcod.CENTER,

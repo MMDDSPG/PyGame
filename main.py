@@ -5,6 +5,7 @@ import traceback
 import exceptions
 import input_handlers
 import setup_game
+from game_config import screen_width, screen_height
 
 def save_game(handler: input_handlers.BaseEventHandler, filename: str) -> None:
     """If the current event handler has an active Engine then save it."""
@@ -13,9 +14,6 @@ def save_game(handler: input_handlers.BaseEventHandler, filename: str) -> None:
         print("Game saved.")
 
 def main():
-    # 设置游戏窗口的宽度和高度（以字符为单位）
-    screen_width = 80
-    screen_height = 50
 
     # 加载游戏使用的字体图集
     # dejavu10x10_gs_tc.png: 字体文件
