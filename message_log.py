@@ -65,11 +65,11 @@ class MessageLog:
         """渲染提供的消息。
         消息从最后一条开始向后渲染。
         """
-        y_offset = height - 1
+        y_offset = 0
 
         for message in reversed(messages):
             for line in reversed(list(cls.wrap(message.full_text, width))):
                 console.print(x=x, y=y + y_offset, string=line, fg=message.fg)
-                y_offset -= 1
-                if y_offset < 0:
+                y_offset += 1
+                if y_offset > height:
                     return  # 没有更多空间打印消息

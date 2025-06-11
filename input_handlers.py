@@ -332,24 +332,22 @@ class CharacterScreenEventHandler(AskUserEventHandler):
     def on_render(self, console: tcod.console.Console) -> None:
         super().on_render(console)
 
-        if self.engine.player.x <= 30:
-            x = 40
-        else:
-            x = 0
-
-        y = 0
-
         width = len(self.TITLE) + 8
 
-        console.draw_frame(
-            x=x,
+        if self.engine.player.x <= game_config.screen_width // 2:
+            x = game_config.screen_width - width - game_config.x_margin
+        else:
+            x = game_config.x_margin
+
+        y = 0
+        height = 7
+
+        console.draw_frame(x=x,y=y,width=width,height=height)
+        console.print(
+            x=x + width // 2,
             y=y,
-            width=width,
-            height=7,
-            title=self.TITLE,
-            clear=True,
-            fg=(255, 255, 255),
-            bg=(0, 0, 0),
+            string=self.TITLE,
+            alignment=tcod.constants.CENTER
         )
 
         console.print(
@@ -378,20 +376,23 @@ class LevelUpEventHandler(AskUserEventHandler):
     def on_render(self, console: tcod.console.Console) -> None:
         super().on_render(console)
 
-        if self.engine.player.x <= 30:
-            x = 40
-        else:
-            x = 0
+        width = 40
+        height = 8
 
-        console.draw_frame(
-            x=x,
-            y=0,
-            width=35,
-            height=8,
-            title=self.TITLE,
-            clear=True,
-            fg=(255, 255, 255),
-            bg=(0, 0, 0),
+        if self.engine.player.x <= game_config.screen_width // 2:
+            x = game_config.screen_width - width - game_config.x_margin
+        else:
+            x = game_config.x_margin
+
+        y = 0
+        
+
+        console.draw_frame(x=x,y=y,width=width,height=height)
+        console.print(
+            x=x + width // 2,
+            y=y,
+            string=self.TITLE,
+            alignment=tcod.constants.CENTER
         )
 
         console.print(x=x + 1, y=1, string="Congratulations! You level up!")
@@ -459,14 +460,7 @@ class InventoryEventHandler(AskUserEventHandler):
         height = number_of_items_in_inventory + 2
 
         if height <= 3:
-            height = 3
-
-        if self.engine.player.x <= 30:
-            x = 40
-        else:
-            x = 0
-
-        y = 0
+            height = 3       
 
         # 计算标题的宽度
         title_width = len(self.TITLE)
@@ -477,6 +471,14 @@ class InventoryEventHandler(AskUserEventHandler):
         )
         # 物品名称前需要加上 "(a) " 这样的前缀，所以加4 (E) 再加4
         width = max(title_width, max_item_width + 4) + 4 + 4
+
+        if self.engine.player.x <= game_config.screen_width // 2:
+            x = game_config.screen_width - width - game_config.x_margin
+        else:
+            x = game_config.x_margin
+
+        y = 0
+
 
         console.draw_frame(x=x,y=y,width=width,height=height)
         console.print(
