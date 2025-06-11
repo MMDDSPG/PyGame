@@ -49,18 +49,18 @@ class Engine:
     def render(self, console: Console) -> None:
         self.game_map.render(console)
 
-        render_functions.render_margin(
-            console=console, 
-            x=0, 
-            y=game_config.split_line_y,
-        )
+        # render_functions.render_margin(
+        #     console=console, 
+        #     x=0, 
+        #     y=game_config.split_line_y,
+        # )
 
         self.message_log.render(
             console=console, 
             x=game_config.bar_width + game_config.x_margin, 
-            y=game_config.split_line_y + game_config.mouse_description + 1, 
-            width=game_config.screen_width - game_config.bar_width - game_config.x_margin, 
-            height=game_config.log_height - game_config.mouse_description
+            y=game_config.split_line_y + game_config.mouse_description, 
+            width=game_config.screen_width - game_config.bar_width - game_config.x_margin - game_config.tip_width - game_config.x_margin, 
+            height=game_config.log_height
         )
 
         render_functions.render_bar(
@@ -68,6 +68,12 @@ class Engine:
             current_value=self.player.fighter.hp,
             maximum_value=self.player.fighter.max_hp,
             total_width= game_config.bar_width,
+        )
+
+        render_functions.render_tip(
+            console=console,
+            location=(game_config.screen_width - game_config.tip_width, game_config.split_line_y + game_config.mouse_description),
+            tip="Press the 'h' for help"
         )
 
         render_functions.render_dungeon_level(
@@ -79,7 +85,7 @@ class Engine:
         render_functions.render_names_at_mouse_location(
             console=console, 
             x=game_config.bar_width + game_config.x_margin, 
-            y=game_config.split_line_y + game_config.mouse_description, 
+            y=game_config.split_line_y, 
             engine=self
         )
 

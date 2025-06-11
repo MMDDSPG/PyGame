@@ -67,3 +67,7 @@ def render_names_at_mouse_location(
 
 def render_margin(console: Console, x: int, y: int) -> None:
     console.draw_rect(x=x, y=y, width=game_config.screen_width, height=1, ch=1, bg=color.bar_empty)
+
+def render_tip(console: Console, location: Tuple[int, int], tip: str) -> None:
+    x, y = location
+    console.print(x=x, y=y, string=tip)

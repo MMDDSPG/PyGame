@@ -22,7 +22,10 @@ menu_width = 36
 fov_radius = 8
 
 # 血条宽度
-bar_width = 37
+bar_width = 20
+
+# 提示等其他内容
+tip_width = 30
 
 # 横向间距
 x_margin = 4
