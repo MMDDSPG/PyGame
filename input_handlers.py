@@ -198,8 +198,8 @@ class MainGameEventHandler(EventHandler):
             return InventoryDropHandler(self.engine)
         elif key == tcod.event.KeySym.c:
            return CharacterScreenEventHandler(self.engine)
-        # elif key == tcod.event.KeySym.h:
-        #     return HelpHandler(self.engine)
+        elif key == tcod.event.KeySym.h:
+            return HelpViewer(self.engine)
         elif key == tcod.event.KeySym.PERIOD:
             return actions.TakeStairsAction(player)
         elif key == tcod.event.KeySym.SLASH:
@@ -653,3 +653,53 @@ class PopupMessage(BaseEventHandler):
         if (self.needQuit):
             raise SystemExit()
         return self.parent
+
+class HelpViewer(EventHandler):
+    """显示功能按键提示的视图。"""
+
+    def __init__(self, engine: "Engine"):
+        super().__init__(engine)
+        self.help_items = [
+            ("move", "WASD/Arrow"),
+            ("wait", "P"),
+            ("pickup", "G"),
+            ("use", "I"),
+            ("drop", "O"),
+            ("character", "C"),
+            ("history", "V"),
+            ("select map", "/"),
+            ("quit", "ESC"),
+        ]
+
+    def on_render(self, console: tcod.console.Console) -> None:
+        super().on_render(console)  # 将主状态绘制为背景
+
+        # 计算窗口大小
+        width = 40
+        height = len(self.help_items) + 3  # +3 是为了标题和边框
+
+        # 创建新的控制台
+        help_console = tcod.console.Console(width, height)
+
+        # 绘制框架
+        help_console.draw_frame(0, 0, width, height)
+        help_console.print(
+            x=width // 2,
+            y=0,
+            string="┤HELP├",
+            alignment=tcod.constants.CENTER
+        )
+
+        # 绘制表格内容
+        for i, (action, key) in enumerate(self.help_items):
+            help_console.print(x=1, y=i + 1, string=f"{action}")
+            help_console.print(x=width // 2, y=i + 1, string=f"{key}")
+
+        # 将帮助控制台绘制到主控制台上
+        x = game_config.screen_width // 2 - width // 2
+        y = game_config.screen_height // 2 - height // 2
+        help_console.blit(console, x, y)
+
+    def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
+        # 任何按键都会返回到主游戏状态
+        return MainGameEventHandler(self.engine)

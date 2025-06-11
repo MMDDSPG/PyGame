@@ -29,12 +29,11 @@ class BaseAI(Action):
         for entity in self.entity.gamemap.entities:
             # 检查实体是否阻挡移动并且成本不为零（阻挡）。
             if entity.blocks_movement and cost[entity.x, entity.y]:
-                # 添加到阻挡位置的成本。
-                # 较低的数字意味着更多的敌人会挤在走廊后面。
-                # 较高的数字意味着敌人会采取更长的路径来包围玩家。
                 cost[entity.x, entity.y] += 10
 
         # 从成本数组创建一个图，并将其传递给新的路径查找器。
+        # 表示上下左右移动的成本为2
+        # 表示对角线移动的成本为3
         graph = tcod.path.SimpleGraph(cost=cost, cardinal=2, diagonal=3)
         pathfinder = tcod.path.Pathfinder(graph)
 
