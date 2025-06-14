@@ -8,7 +8,7 @@ class DamagePopup:
         self.y = y
         self.amount = amount
         self.creation_time = time.time()
-        self.duration = 0.5  # 显示0.5秒
+        self.duration = 0.2  # 显示0.5秒
         self.offset_y = 1    # 显示位置
 
     def is_expired(self) -> bool:

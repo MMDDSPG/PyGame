@@ -19,14 +19,14 @@ max_items_by_floor = [
 
 # 定义每个楼层最大敌人数量 (楼层, 最大敌人数量)
 max_monsters_by_floor = [
-   (1, 10),
+   (1, 2),
    (4, 3),
    (6, 5),
 ]
 
 # 定义每个楼层物品概率 (楼层, 物品概率)
 item_chances: Dict[int, List[Tuple["Entity", int]]] = {
-   0: [(entity_factories.health_potion, 5)],
+   0: [(entity_factories.health_potion, 5), (entity_factories.fireball_scroll, 55)],
    2: [(entity_factories.confusion_scroll, 10)],
    4: [(entity_factories.lightning_scroll, 25), (entity_factories.sword, 5)],
    6: [(entity_factories.fireball_scroll, 25), (entity_factories.chain_mail, 15)],

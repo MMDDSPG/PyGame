@@ -48,9 +48,10 @@ def main():
                 context.present(root_console)
 
                 try:
-                    for event in tcod.event.wait():
+                    for event in tcod.event.get():
                         context.convert_event(event)
                         handler = handler.handle_events(event)
+                    tcod.event.wait(0.016) #60FPS
                 except Exception:  # Handle exceptions in game.
                     traceback.print_exc()  # Print error to stderr.
                     # Then print the error to the message log.
