@@ -93,4 +93,12 @@ class Fighter(BaseComponent):
         return amount_recovered
     
     def take_damage(self, amount: int) -> None:
-        self.hp -= amount
+        if amount > 0:
+            self.hp -= amount
+            # 添加伤害提示
+            if self.parent.parent.engine:
+                self.parent.parent.engine.damage_popup_manager.add_popup(
+                    self.parent.x,
+                    self.parent.y,
+                    amount
+                )

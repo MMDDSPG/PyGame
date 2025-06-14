@@ -12,6 +12,8 @@ import exceptions
 import lzma
 import pickle
 
+from components.damage_popup import DamagePopupManager
+
 
 if TYPE_CHECKING:
     from entity import Actor
@@ -26,6 +28,7 @@ class Engine:
         self.message_log = MessageLog()
         self.mouse_location = (0, 0)
         self.player = player
+        self.damage_popup_manager = DamagePopupManager()
 
     def handle_enemy_turns(self) -> None:
         # 遍历地图中的所有实体，除了玩家
@@ -88,6 +91,9 @@ class Engine:
             y=game_config.split_line_y, 
             engine=self
         )
+
+        # 在最后渲染伤害提示
+        self.damage_popup_manager.render(console)
 
     def save_as(self, filename: str) -> None:
         """Save this Engine instance as a compressed file."""
